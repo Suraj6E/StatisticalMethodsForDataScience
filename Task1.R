@@ -1,5 +1,4 @@
 library(ggplot2)
-library(ts)  # For creating time series objects
 library(xts) # For time series manipulation
 
 #windows()  # On Windows
@@ -21,8 +20,25 @@ print(missing_data)
 data$invoice_date <- as.Date(data$invoice_date, format = "%d/%m/%y")
 data <- data[order(data$invoice_date), ]
 
-#convert invoice_date into a time series object
-ndvi_series <- xts(data$ndvi_value, order.by = data$invoice_date)
+# Create an xts time series objects_data <- ts(data, order.by = data$invoice_date)
+ts_data <- ts(data, start=c(2020, 1, 1), frequency = 365)
+
+#plot(ts_data)
+
+# Extract the dates from the time series object
+dates <- time(ts_data)
+
+# Create the time series plot with date labels
+plot(dates, ts_data, type = "l", xlab = "Date", ylab = "Value")
+
+# Optionally, you can format the date labels for better readability
+axis.Date(side = 1, at = dates, format = "%Y-%m-%d")
+
+#ts_data <- ts(ts_values, start = c(year(data$invoice_date[1]), month(data$invoice_date[1])), frequency = 1)
+
+#ndvi_series <- xts(data$ndvi_value, order.by = data$invoice_date)
+
+plot.xts(ts_data, main = "Invoice Date Time Series", xlab = "Date", ylab = "Value", type = "l")
 
 #total accumulated price and quantity
 data$accumulated_price <- cumsum(data$price)
@@ -40,3 +56,9 @@ plot(data$invoice_date, data$quantity, xlab="Date", ylab="Quantity", main="Time 
 
 # Time series plot of price
 plot(data$invoice_date, data$accumulated_price, xlab = "Date", ylab = "Price", main = "Time Series Plot of Price")
+
+
+
+
+
+#time series plot
