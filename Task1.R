@@ -67,11 +67,21 @@ theta_hat <- XTX_inverse %*% XT_y
 print(theta_hat)
 
 
-X <- ts_data[, 1:8]
-y <- ts_data[7]
+# quantity as matrix
+X <- ts_data[, 6]
+
+# Select all columns except the 7th column
+X <- ts_data[, -7]
+
+#price as matrix
+y <- ts_data[, 7]
+
 XTX <- t(X) %*% X
 XTX_inverse <- solve(XTX)
 XT_y <- t(X) %*% y
 theta_hat_series <- XTX_inverse %*% XT_y
-plot(theta_hat_series)
+
+# Plot or print the result
 print(theta_hat_series)
+
+plot(theta_hat_series)
