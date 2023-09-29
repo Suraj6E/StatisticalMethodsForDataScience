@@ -20,10 +20,10 @@ print(missing_data)
 data$invoice_date <- as.Date(data$invoice_date, format = "%d/%m/%y")
 data <- data[order(data$invoice_date), ]
 
-# Create an xts time series objects_data <- ts(data, order.by = data$invoice_date)
+# Create an xts time series objectts_data <- ts(data, order.by = data$invoice_date)
 ts_data <- ts(data, start=c(2020, 1, 1), frequency = 365)
 
-#plot(ts_data)
+plot(ts_data)
 
 # Extract the dates from the time series object
 dates <- time(ts_data)
@@ -58,7 +58,20 @@ plot(data$invoice_date, data$quantity, xlab="Date", ylab="Quantity", main="Time 
 plot(data$invoice_date, data$accumulated_price, xlab = "Date", ylab = "Price", main = "Time Series Plot of Price")
 
 
+X <- data$quantity
+y <- data$price
+XTX <- t(X) %*% X
+XTX_inverse <- solve(XTX)
+XT_y <- t(X) %*% y
+theta_hat <- XTX_inverse %*% XT_y
+print(theta_hat)
 
 
-
-#time series plot
+X <- ts_data[, 1:8]
+y <- ts_data[7]
+XTX <- t(X) %*% X
+XTX_inverse <- solve(XTX)
+XT_y <- t(X) %*% y
+theta_hat_series <- XTX_inverse %*% XT_y
+plot(theta_hat_series)
+print(theta_hat_series)
