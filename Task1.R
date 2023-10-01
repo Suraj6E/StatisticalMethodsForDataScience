@@ -23,7 +23,12 @@ data <- data[order(data$invoice_date), ]
 # Create an xts time series objectts_data <- ts(data, order.by = data$invoice_date)
 ts_data <- ts(data, start=c(2020, 1, 1), frequency = 365)
 
-plot(ts_data)
+ts_data_1 <- ts_data[1]
+
+plot(ts_data[, 9], ts_data[, 7], type="hist",)
+hist(ts_data[, 7], xlab= "Price", main = "Frequesncy of price")
+hist(ts_data[, 6], xlab= "Quantity", main = "Frequesncy of quantity")
+hist(ts_data[, 6], xlab= "Produuuct category", main = "Frequesncy of product category")
 
 # Extract the dates from the time series object
 dates <- time(ts_data)
@@ -85,3 +90,4 @@ theta_hat_series <- XTX_inverse %*% XT_y
 print(theta_hat_series)
 
 plot(theta_hat_series)
+
