@@ -24,6 +24,32 @@ data <- data[order(data$invoice_date), ]
 ts_data <- ts(data, start=c(2020, 1, 1), frequency = 365)
 ts_data_1 <- ts_data[, 1]
 
+# Assuming you have a dataframe named 'data' with the variables 'x1', 'x2', 'x3', 'x4', and 'y'
+correlation_matrix <- cor(ts_data)
+
+# Print the correlation matrix
+print(correlation_matrix)
+
+library(gplots)
+
+# Create a heatmap of the correlation matrix with values
+heatmap.2(correlation_matrix, 
+          col = colorRampPalette(c("blue", "white", "red"))(20), # Choose a color palette
+          trace = "none", # Turn off row/column labels
+          main = "Correlation Heatmap with Values",
+          key.title = NA, # Turn off the legend title
+          key = TRUE, # Display the color key
+          density.info = "none", # Turn off density plot
+          cellnote = round(correlation_matrix, 2), # Display correlation values
+          notecol = "black", # Set text color for correlation values
+          margins = c(10, 10) # Add margins to the plot
+)
+
+correlation_matrix <- cor(ts_data)
+
+# Print the correlation matrix
+print(correlation_matrix)
+
 plot(ts_data[, 9], ts_data[, 7], type="hist",)
 hist(ts_data[, 7], xlab= "Price", main = "Frequesncy of price")
 hist(ts_data[, 6], xlab= "Quantity", main = "Frequesncy of quantity")
