@@ -151,6 +151,33 @@ rss_df <- data.frame(
 print(rss_df)
 
 
+# Define a function to calculate the log-likelihood for a given model
+calculate_log_likelihood <- function(model) {
+  n <- length(model$residuals)
+  sigma_sq <- sum(model$residuals^2) / (n - length(model$coefficients))
+  log_likelihood <- -n/2 * log(2 * pi * sigma_sq) - sum(model$residuals^2) / (2 * sigma_sq)
+  return(log_likelihood)
+}
+
+# Calculate log-likelihood for each model
+log_likelihood_values <- c(
+  calculate_log_likelihood(model1),
+  calculate_log_likelihood(model2),
+  calculate_log_likelihood(model3),
+  calculate_log_likelihood(model4),
+  calculate_log_likelihood(model5)
+)
+
+# Create a data frame to store the log-likelihood for each model
+log_likelihood_df <- data.frame(
+  Model = c("Model 1", "Model 2", "Model 3", "Model 4", "Model 5"),
+  LogLikelihood = log_likelihood_values
+)
+
+# Print the log-likelihood for each model
+print(log_likelihood_df)
+
+
 # Calculate R-squared values for each model
 rsquared_values <- c(
   summary(model1)$r.squared,
