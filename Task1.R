@@ -22,8 +22,7 @@ data <- data[order(data$invoice_date), ]
 
 # Create an xts time series objectts_data <- ts(data, order.by = data$invoice_date)
 ts_data <- ts(data, start=c(2020, 1, 1), frequency = 365)
-
-ts_data_1 <- ts_data[1]
+ts_data_1 <- ts_data[, 1]
 
 plot(ts_data[, 9], ts_data[, 7], type="hist",)
 hist(ts_data[, 7], xlab= "Price", main = "Frequesncy of price")
@@ -178,15 +177,78 @@ log_likelihood_df <- data.frame(
 print(log_likelihood_df)
 
 
-# Calculate R-squared values for each model
-rsquared_values <- c(
-  summary(model1)$r.squared,
-  summary(model2)$r.squared,
-  summary(model3)$r.squared,
-  summary(model4)$r.squared,
-  summary(model5)$r.squared
+# Calculate AIC for each model
+aic_values <- c(
+  AIC(model1),
+  AIC(model2),
+  AIC(model3),
+  AIC(model4),
+  AIC(model5)
 )
 
-# Print the coefficients table
-print(coefficients_df)
+# Create a data frame to store the AIC for each model
+aic_df <- data.frame(
+  Model = c("Model 1", "Model 2", "Model 3", "Model 4", "Model 5"),
+  AIC = aic_values
+)
+
+# Print the AIC for each model
+print(aic_df)
+
+
+# Calculate BIC for each model
+bic_values <- c(
+  BIC(model1),
+  BIC(model2),
+  BIC(model3),
+  BIC(model4),
+  BIC(model5)
+)
+
+# Create a data frame to store the BIC for each model
+bic_df <- data.frame(
+  Model = c("Model 1", "Model 2", "Model 3", "Model 4", "Model 5"),
+  BIC = bic_values
+)
+
+# Print the BIC for each model
+print(bic_df)
+
+# Make predictions using each model
+predictions1 <- predict(model1)
+predictions2 <- predict(model2)
+predictions3 <- predict(model3)
+predictions4 <- predict(model4)
+predictions5 <- predict(model5)
+
+# Calculate prediction errors
+errors1 <- y - predictions1
+errors2 <- y - predictions2
+errors3 <- y - predictions3
+errors4 <- y - predictions4
+errors5 <- y - predictions5
+
+# Create histograms to visualize the distribution of errors
+histogram1 <- ggplot(data.frame(Errors = errors1), aes(x = Errors)) +
+  geom_histogram(binwidth = 1, fill = "blue", color = "black") +
+  labs(title = "Model 1 Prediction Errors", x = "Prediction Errors")
+
+histogram2 <- ggplot(data.frame(Errors = errors2), aes(x = Errors)) +
+  geom_histogram(binwidth = 1, fill = "red", color = "black") +
+  labs(title = "Model 2 Prediction Errors", x = "Prediction Errors")
+
+histogram3 <- ggplot(data.frame(Errors = errors3), aes(x = Errors)) +
+  geom_histogram(binwidth = 1, fill = "green", color = "black") +
+  labs(title = "Model 3 Prediction Errors", x = "Prediction Errors")
+
+histogram4 <- ggplot(data.frame(Errors = errors4), aes(x = Errors)) +
+  geom_histogram(binwidth = 1, fill = "purple", color = "black") +
+  labs(title = "Model 4 Prediction Errors", x = "Prediction Errors")
+
+histogram5 <- ggplot(data.frame(Errors = errors5), aes(x = Errors)) +
+  geom_histogram(binwidth = 1, fill = "orange", color = "black") +
+  labs(title = "Model 5 Prediction Errors", x = "Prediction Errors")
+
+# Display the histograms
+grid.arrange(histogram1, histogram2, histogram3, histogram4, histogram5, ncol = 2)
 
