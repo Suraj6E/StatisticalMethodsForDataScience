@@ -141,6 +141,15 @@ rss_values <- c(
   sum(model5$residuals^2)
 )
 
+# Create a data frame to store the RSS for each model
+rss_df <- data.frame(
+  Model = c("Model 1", "Model 2", "Model 3", "Model 4", "Model 5"),
+  RSS = rss_values
+)
+
+# Print the RSS for each model
+print(rss_df)
+
 
 # Calculate R-squared values for each model
 rsquared_values <- c(
