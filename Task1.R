@@ -91,3 +91,47 @@ print(theta_hat_series)
 
 plot(theta_hat_series)
 
+
+# Load required libraries
+library(dplyr)
+library(tidyr)
+
+# Create a data frame with your x and y data
+data <- data.frame(
+  x1 = x,
+  x2 = x,
+  x3 = x,
+  x4 = x,
+  y = y
+)
+
+# Define the candidate models with estimator variables
+model1 <- lm(y ~ poly(x4, 4, raw = TRUE) * θ1 + poly(x1, 2, raw = TRUE) * θ2 +
+               poly(x1, 3, raw = TRUE) * θ3 + poly(x2, 4, raw = TRUE) * θ4 +
+               poly(x1, 4, raw = TRUE) * θbias + ε, data = data)
+
+model2 <- lm(y ~ poly(x4, 4, raw = TRUE) * θ1 + poly(x1, 3, raw = TRUE) * θ2 +
+               poly(x3, 4, raw = TRUE) * θ3 + ε, data = data)
+
+model3 <- lm(y ~ poly(x3, 3, raw = TRUE) * θ1 + poly(x3, 4, raw = TRUE) * θ2 + ε, data = data)
+
+model4 <- lm(y ~ poly(x2, 2, raw = TRUE) * θ1 + poly(x1, 3, raw = TRUE) * θ2 +
+               poly(x3, 4, raw = TRUE) * θ3 + ε, data = data)
+
+model5 <- lm(y ~ poly(x4, 4, raw = TRUE) * θ1 + poly(x1, 2, raw = TRUE) * θ2 +
+               poly(x1, 3, raw = TRUE) * θ3 + poly(x3, 4, raw = TRUE) * θ4 +
+               θbias + ε, data = data)
+
+# Create a data frame to store the coefficients for each model
+coefficients_df <- data.frame(
+  Model = c("Model 1", "Model 2", "Model 3", "Model 4", "Model 5"),
+  θ1 = c(coef(model1)["poly(x4, 4, raw = TRUE)θ1"], coef(model2)["poly(x4, 4, raw = TRUE)θ1"], coef(model3)["poly(x3, 3, raw = TRUE)θ1"], coef(model4)["poly(x2, 2, raw = TRUE)θ1"], coef(model5)["poly(x4, 4, raw = TRUE)θ1"]),
+  θ2 = c(coef(model1)["poly(x1, 2, raw = TRUE)θ2"], coef(model2)["poly(x1, 3, raw = TRUE)θ2"], coef(model3)["poly(x3, 3, raw = TRUE)θ2"], coef(model4)["poly(x1, 3, raw = TRUE)θ2"], coef(model5)["poly(x1, 2, raw = TRUE)θ2"]),
+  θ3 = c(coef(model1)["poly(x1, 3, raw = TRUE)θ3"], coef(model2)["poly(x3, 4, raw = TRUE)θ3"], NA, coef(model4)["poly(x3, 4, raw = TRUE)θ3"], coef(model5)["poly(x1, 3, raw = TRUE)θ3"]),
+  θ4 = c(coef(model1)["poly(x2, 4, raw = TRUE)θ4"], NA, NA, NA, coef(model5)["poly(x3, 4, raw = TRUE)θ4"]),
+  θbias = c(coef(model1)["poly(x1, 4, raw = TRUE)θbias"], coef(model2)["(Intercept)"], coef(model3)["(Intercept)"], coef(model4)["(Intercept)"], coef(model5)["θbias"])
+)
+
+# Print the coefficients table
+print(coefficients_df)
+
