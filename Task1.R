@@ -132,6 +132,16 @@ coefficients_df <- data.frame(
   θbias = c(coef(model1)["poly(x1, 4, raw = TRUE)θbias"], coef(model2)["(Intercept)"], coef(model3)["(Intercept)"], coef(model4)["(Intercept)"], coef(model5)["θbias"])
 )
 
+# Calculate RSS for each model
+rss_values <- c(
+  sum(model1$residuals^2),
+  sum(model2$residuals^2),
+  sum(model3$residuals^2),
+  sum(model4$residuals^2),
+  sum(model5$residuals^2)
+)
+
+
 # Calculate R-squared values for each model
 rsquared_values <- c(
   summary(model1)$r.squared,
