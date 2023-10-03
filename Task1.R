@@ -148,15 +148,51 @@ model4 <- lm(y ~ poly(x2, 2, raw = TRUE) + poly(x1, 3, raw = TRUE) + poly(x3, 4,
 model5 <- lm(y ~ poly(x4, 4, raw = TRUE) + poly(x1, 2, raw = TRUE) + poly(x1, 3, raw = TRUE) +
                poly(x3, 4, raw = TRUE), data = df)
 
-# Create a data frame to store the coefficients for each model
-coefficients_df <- data.frame(
-  Model = c("Model 1", "Model 2", "Model 3", "Model 4", "Model 5"),
-  θ1 = c(coef(model1)["poly(x4, 4, raw = TRUE)θ1"], coef(model2)["poly(x4, 4, raw = TRUE)θ1"], coef(model3)["poly(x3, 3, raw = TRUE)θ1"], coef(model4)["poly(x2, 2, raw = TRUE)θ1"], coef(model5)["poly(x4, 4, raw = TRUE)θ1"]),
-  θ2 = c(coef(model1)["poly(x1, 2, raw = TRUE)θ2"], coef(model2)["poly(x1, 3, raw = TRUE)θ2"], coef(model3)["poly(x3, 3, raw = TRUE)θ2"], coef(model4)["poly(x1, 3, raw = TRUE)θ2"], coef(model5)["poly(x1, 2, raw = TRUE)θ2"]),
-  θ3 = c(coef(model1)["poly(x1, 3, raw = TRUE)θ3"], coef(model2)["poly(x3, 4, raw = TRUE)θ3"], NA, coef(model4)["poly(x3, 4, raw = TRUE)θ3"], coef(model5)["poly(x1, 3, raw = TRUE)θ3"]),
-  θ4 = c(coef(model1)["poly(x2, 4, raw = TRUE)θ4"], NA, NA, NA, coef(model5)["poly(x3, 4, raw = TRUE)θ4"]),
-  θbias = c(coef(model1)["poly(x1, 4, raw = TRUE)θbias"], coef(model2)["(Intercept)"], coef(model3)["(Intercept)"], coef(model4)["(Intercept)"], coef(model5)["θbias"])
+### Task 2.1 ###
+
+# Create a list to store the estimated parameters for each model
+estimated_parameters_list <- list(
+  Model1 = coef(model1),
+  Model2 = coef(model2),
+  Model3 = coef(model3),
+  Model4 = coef(model4),
+  Model5 = coef(model5)
 )
+
+# Create a function to extract specific coefficients
+extract_coefficients <- function(parameters) {
+  coef_list <- list()
+  coef_list$θ1 <- parameters["poly(x4, 4, raw = TRUE)1"]
+  coef_list$θ2 <- parameters["poly(x1, 3, raw = TRUE)1"]
+  coef_list$θ3 <- parameters["poly(x3, 4, raw = TRUE)1"]
+  coef_list$θ4 <- parameters["poly(x2, 2, raw = TRUE)1"]
+  coef_list$θbias <- parameters["(Intercept)"]
+  return(coef_list)
+}
+
+# Create a DataFrame to store coefficients for each model
+coefficients_df <- data.frame(
+  Model = character(0),
+  θ1 = numeric(0),
+  θ2 = numeric(0),
+  θ3 = numeric(0),
+  θ4 = numeric(0),
+  θbias = numeric(0)
+)
+
+# Loop through each model's estimated parameters
+for (model_name in names(estimated_parameters_list)) {
+  parameters <- estimated_parameters_list[[model_name]]
+  coefficients <- extract_coefficients(parameters)
+  
+  # Add coefficients to the DataFrame
+  coefficients_df <- rbind(coefficients_df, cbind(Model = model_name, as.data.frame(t(coefficients))))
+}
+
+# Print the coefficients DataFrame
+print(coefficients_df)
+
+
 
 # Calculate RSS for each model
 rss_values <- c(

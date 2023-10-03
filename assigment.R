@@ -25,15 +25,45 @@ model4 <- lm(y ~ poly(x2, 2, raw = TRUE) + poly(x1, 3, raw = TRUE) + poly(x3, 4,
 model5 <- lm(y ~ poly(x4, 4, raw = TRUE) + poly(x1, 2, raw = TRUE) + poly(x1, 3, raw = TRUE) +
                poly(x3, 4, raw = TRUE), data = df)
 
-# Task 2.1
+# Obtain the estimated coefficients for each model
+coefficients_model1 <- coef(model1)
+coefficients_model2 <- coef(model2)
+coefficients_model3 <- coef(model3)
+coefficients_model4 <- coef(model4)
+coefficients_model5 <- coef(model5)
+
+# Create a dataframe to display the coefficients
 coefficients_df <- data.frame(
   Model = c("Model 1", "Model 2", "Model 3", "Model 4", "Model 5"),
-  θ1 = c(coef(model1)["poly(x4, 4, raw = TRUE)θ1"], coef(model2)["poly(x4, 4, raw = TRUE)θ1"], coef(model3)["poly(x3, 3, raw = TRUE)θ1"], coef(model4)["poly(x2, 2, raw = TRUE)θ1"], coef(model5)["poly(x4, 4, raw = TRUE)θ1"]),
-  θ2 = c(coef(model1)["poly(x1, 2, raw = TRUE)θ2"], coef(model2)["poly(x1, 3, raw = TRUE)θ2"], coef(model3)["poly(x3, 3, raw = TRUE)θ2"], coef(model4)["poly(x1, 3, raw = TRUE)θ2"], coef(model5)["poly(x1, 2, raw = TRUE)θ2"]),
-  θ3 = c(coef(model1)["poly(x1, 3, raw = TRUE)θ3"], coef(model2)["poly(x3, 4, raw = TRUE)θ3"], NA, coef(model4)["poly(x3, 4, raw = TRUE)θ3"], coef(model5)["poly(x1, 3, raw = TRUE)θ3"]),
-  θ4 = c(coef(model1)["poly(x2, 4, raw = TRUE)θ4"], NA, NA, NA, coef(model5)["poly(x3, 4, raw = TRUE)θ4"]),
-  θbias = c(coef(model1)["poly(x1, 4, raw = TRUE)θbias"], coef(model2)["(Intercept)"], coef(model3)["(Intercept)"], coef(model4)["(Intercept)"], coef(model5)["θbias"])
+  θ1 = c(coefficients_model1["poly(x4, 4, raw = TRUE)θ1"],
+         coefficients_model2["poly(x4, 4, raw = TRUE)θ1"],
+         coefficients_model3["poly(x3, 3, raw = TRUE)θ1"],
+         coefficients_model4["poly(x2, 2, raw = TRUE)θ1"],
+         coefficients_model5["poly(x4, 4, raw = TRUE)θ1"]),
+  θ2 = c(coefficients_model1["poly(x1, 2, raw = TRUE)θ2"],
+         coefficients_model2["poly(x1, 3, raw = TRUE)θ2"],
+         NA,
+         coefficients_model4["poly(x1, 3, raw = TRUE)θ2"],
+         coefficients_model5["poly(x1, 2, raw = TRUE)θ2"]),
+  θ3 = c(coefficients_model1["poly(x1, 3, raw = TRUE)θ3"],
+         coefficients_model2["poly(x3, 4, raw = TRUE)θ3"],
+         NA,
+         coefficients_model4["poly(x3, 4, raw = TRUE)θ3"],
+         coefficients_model5["poly(x1, 3, raw = TRUE)θ3"]),
+  θ4 = c(coefficients_model1["poly(x2, 4, raw = TRUE)θ4"],
+         NA,
+         NA,
+         NA,
+         coefficients_model5["poly(x3, 4, raw = TRUE)θ4"]),
+  θbias = c(coefficients_model1["poly(x1, 4, raw = TRUE)θbias"],
+            coefficients_model2["(Intercept)"],
+            coefficients_model3["(Intercept)"],
+            coefficients_model4["(Intercept)"],
+            coefficients_model5["θbias"])
 )
+
+# Display the dataframe
+coefficients_df
 
 # Task 2.2
 rss_values <- c(
