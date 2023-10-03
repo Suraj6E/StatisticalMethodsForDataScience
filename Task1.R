@@ -22,7 +22,7 @@ data <- data[order(data$invoice_date), ]
 
 # Create an xts time series objectts_data <- ts(data, order.by = data$invoice_date)
 ts_data <- ts(data, start=c(2020, 1, 1), frequency = 365)
-ts_data_1 <- ts_data[, 1]
+#ts_data_1 <- ts_data[, 1]
 
 # Assuming you have a dataframe named 'data' with the variables 'x1', 'x2', 'x3', 'x4', and 'y'
 correlation_matrix <- cor(ts_data)
@@ -77,6 +77,8 @@ data$total_sale_quantity <- cumsum(data$quantity)
 #Summary Statistics
 summary(data)
 
+
+
 # Time series plot of total sales quantity (y)
 plot(data$invoice_date, data$total_sales_quantity, xlab="Date", ylab="Total Sales Quantity",  main="Time Series Plot of Total Sales Quantity")
 
@@ -86,7 +88,6 @@ plot(data$invoice_date, data$quantity, xlab="Date", ylab="Quantity", main="Time 
 
 # Time series plot of price
 plot(data$invoice_date, data$accumulated_price, xlab = "Date", ylab = "Price", main = "Time Series Plot of Price")
-
 
 X <- data$quantity
 y <- data$price
@@ -122,30 +123,30 @@ library(dplyr)
 library(tidyr)
 
 # Create a data frame with your x and y data
-data <- data.frame(
-  x1 = x,
-  x2 = x,
-  x3 = x,
-  x4 = x,
-  y = y
+df <- data.frame(
+  x1 = ts_data[, "age"],
+  x2 = ts_data[, "category"],
+  x3 = ts_data[, "price"],  # You mentioned "price" in your original code, so I included it here as an example
+  x4 = ts_data[, "payment_method"],  # You mentioned "payment_method" in your original code
+  y = ts_data[, "quantity"]  # You mentioned "quantity" in your original code
 )
 
-# Define the candidate models with estimator variables
-model1 <- lm(y ~ poly(x4, 4, raw = TRUE) * θ1 + poly(x1, 2, raw = TRUE) * θ2 +
-               poly(x1, 3, raw = TRUE) * θ3 + poly(x2, 4, raw = TRUE) * θ4 +
-               poly(x1, 4, raw = TRUE) * θbias + ε, data = data)
+# If ts_data is a data frame
+#summary(df)
 
-model2 <- lm(y ~ poly(x4, 4, raw = TRUE) * θ1 + poly(x1, 3, raw = TRUE) * θ2 +
-               poly(x3, 4, raw = TRUE) * θ3 + ε, data = data)
+#modals
+# Define the candidate models
+model1 <- lm(y ~ poly(x4, 4, raw = TRUE) + poly(x1, 2, raw = TRUE) + poly(x1, 3, raw = TRUE) +
+               poly(x2, 4, raw = TRUE) + poly(x1, 4, raw = TRUE), data = df)
 
-model3 <- lm(y ~ poly(x3, 3, raw = TRUE) * θ1 + poly(x3, 4, raw = TRUE) * θ2 + ε, data = data)
+model2 <- lm(y ~ poly(x4, 4, raw = TRUE) + poly(x1, 3, raw = TRUE) + poly(x3, 4, raw = TRUE), data = df)
 
-model4 <- lm(y ~ poly(x2, 2, raw = TRUE) * θ1 + poly(x1, 3, raw = TRUE) * θ2 +
-               poly(x3, 4, raw = TRUE) * θ3 + ε, data = data)
+model3 <- lm(y ~ poly(x3, 3, raw = TRUE) + poly(x3, 4, raw = TRUE), data = df)
 
-model5 <- lm(y ~ poly(x4, 4, raw = TRUE) * θ1 + poly(x1, 2, raw = TRUE) * θ2 +
-               poly(x1, 3, raw = TRUE) * θ3 + poly(x3, 4, raw = TRUE) * θ4 +
-               θbias + ε, data = data)
+model4 <- lm(y ~ poly(x2, 2, raw = TRUE) + poly(x1, 3, raw = TRUE) + poly(x3, 4, raw = TRUE), data = df)
+
+model5 <- lm(y ~ poly(x4, 4, raw = TRUE) + poly(x1, 2, raw = TRUE) + poly(x1, 3, raw = TRUE) +
+               poly(x3, 4, raw = TRUE), data = df)
 
 # Create a data frame to store the coefficients for each model
 coefficients_df <- data.frame(
@@ -240,6 +241,7 @@ bic_df <- data.frame(
 # Print the BIC for each model
 print(bic_df)
 
+#task 2.4
 # Make predictions using each model
 predictions1 <- predict(model1)
 predictions2 <- predict(model2)
