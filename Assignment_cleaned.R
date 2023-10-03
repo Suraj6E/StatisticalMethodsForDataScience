@@ -1,6 +1,8 @@
 #imports
 library(ggplot2)
 library(gridExtra)
+library(dplyr)
+
 
 
 #read customer shopping data 
@@ -308,8 +310,9 @@ results <- data.frame(
   upper_bound = predictions[, 3]   # Upper bound of the prediction interval
 )
 
+plot(results)
+
 # Create a scatterplot of the testing data points with prediction intervals
-library(ggplot2)
 ggplot(results, aes(x = x1, y = y_true)) +
   geom_point() +
   geom_line(aes(x = x1, y = y_pred), color = "blue", size = 1) +
@@ -342,4 +345,7 @@ cat("Success Rate on Predictions:", success_rate, "%\n")
 
 
 ######## Task 3 #########
+
+### Task 3.1 ###
+
 
