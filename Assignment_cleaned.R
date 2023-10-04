@@ -2,7 +2,6 @@
 library(ggplot2)
 library(gridExtra)
 library(dplyr)
-
 library(reshape2)  # For data transformation
 
 options(scipen = 999)  # Setting scipen to a high value to prevent scientific notation
@@ -32,11 +31,42 @@ daily_data <- data %>%
     total_quantity = sum(quantity)             # total quantities
   )
 
+#changing dataset into time series
+ts_data <- ts(daily_data, start = c(2020, 1, 1), frequency = 365)
 
-ggplot(daily_data, aes(invoice_date)) + 
-        #geom_point(aes(y = age), color = "blue") +
-        geom_point(aes(y = categories), color = "red") +
-        theme_light()
+
+### Task 1: Preliminary data analysis ###
+## Task 1.1 ##
+
+# Plots for each features
+age_plt <- ggplot(daily_data, aes(invoice_date, age)) +
+  geom_line(aes(y = age), color = "chocolate3") +
+  theme_minimal() +
+  labs(x = NULL, y = "Age")
+
+categories_plt <- ggplot(daily_data, aes(invoice_date, categories)) +
+  geom_line(aes(y = categories), color = "chocolate3") +
+  theme_minimal() +
+  labs( x = NULL, y = "Categories")
+
+price_plt <- ggplot(daily_data, aes(invoice_date, price)) +
+  geom_line(aes(y = price), color = "chocolate3") +
+  theme_minimal() +
+  labs(title = "Price Plot", x = NULL, y = "Price")
+
+shopping_mall_plt <- ggplot(daily_data, aes(invoice_date, shopping_mall)) +
+  geom_line(aes(y = shopping_mall), color = "chocolate3") +
+  theme_minimal() +
+  labs(x = NULL, y = "Shopping Mall")
+
+total_quantity_plt <- ggplot(daily_data, aes(invoice_date, total_quantity)) +
+  geom_line(aes(y = total_quantity), color = "chocolate3") +
+  theme_minimal() +
+  labs( x = NULL, y = "Total Quantity")
+
+# Arrange the plots in a 1x5 grid with titles and axis labels
+grid.arrange(age_plt, categories_plt, price_plt, shopping_mall_plt, total_quantity_plt, ncol = 1, nrow = 5)
+
 
 # Assuming your dataset is named 'mydata'
 ggplot(data = daily_data, aes(x = invoice_date)) +
@@ -49,7 +79,6 @@ ggplot(data = daily_data, aes(x = invoice_date)) +
   ) + theme_minimal()
 
 plot(daily_data)
-ts_data <- ts(daily_data, start = c(2020, 1, 1), frequency = 365)
 
 plot(ts_data)
 correlation_matrix <- cor(ts_data)
@@ -63,6 +92,7 @@ ggplot(data = correlation_df, aes(x = Var1, y = Var2, fill = value)) +
   scalefill(low = "blue", high = "red") +
   theme_minimal() +
   labs(title = "Correlation Matrix Heatmap")
+
 
 print(correlation_matrix)
 plot(correlation_matrix)
@@ -81,7 +111,7 @@ ggplot(data = correlation_df, aes(x = Var1, y = Var2, fill = value)) +
 
 
 
-#Task 1: Preliminary data analysis
+
 
 
 #task 2: Regression – modeling the relationship between sales data
