@@ -8,6 +8,8 @@ library(dplyr)
 #read customer shopping data 
 data <- read.csv("./customer_shopping_data.csv")
 
+### EDA ###
+
 #print if there are any missing data
 print(colSums(is.na(data)))
 
@@ -16,22 +18,36 @@ data$invoice_date <- as.Date(data$invoice_date, format = "%d/%m/%Y")
 data <- data[order(data$invoice_date), ]
 
 
-#convert data into a time-series
-ts_data <- ts(data, start=c(2020, 1, 1), frequency = 365)
+## convert data into unique time series ##
+
+daily_data <- data %>%
+  group_by(invoice_date) %>%
+  summarize(
+    age = median(age),
+    categories = n_distinct(category),
+    price = sum(price),
+    shopping_mall = n_distinct(shopping_mall),
+    total_quantity = sum(quantity),
+  )
+
+plot(daily_data)
+ts_data <- ts(daily_data, start = c(2020, 1, 1), frequency = 365)
+
+
+
 
 
 #Task 1: Preliminary data analysis
-plot(df) #note df is from below
 
 
 #task 2: Regression – modeling the relationship between sales data
 # Create a data frame with your x and y data
 df <- data.frame(
   x1 = ts_data[, "age"],
-  x2 = ts_data[, "category"],
+  x2 = ts_data[, "categories"],
   x3 = ts_data[, "price"],
   x4 = ts_data[, "shopping_mall"],
-  y = ts_data[, "quantity"]
+  y = ts_data[, "total_quantity"]
 )
 plot(df)
 
