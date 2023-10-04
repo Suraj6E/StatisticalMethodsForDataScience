@@ -12,7 +12,7 @@ data <- read.csv("./customer_shopping_data.csv")
 print(colSums(is.na(data)))
 
 # Convert invoice_date to datetime
-data$invoice_date <- as.Date(data$invoice_date, format = "%d/%m/%y")
+data$invoice_date <- as.Date(data$invoice_date, format = "%d/%m/%Y")
 data <- data[order(data$invoice_date), ]
 
 
@@ -33,6 +33,7 @@ df <- data.frame(
   x4 = ts_data[, "shopping_mall"],
   y = ts_data[, "quantity"]
 )
+plot(df)
 
 cor(df)
 

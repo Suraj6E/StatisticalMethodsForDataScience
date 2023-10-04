@@ -21,7 +21,7 @@ data$invoice_date <- as.Date(data$invoice_date, format = "%d/%m/%y")
 data <- data[order(data$invoice_date), ]
 
 # Create an xts time series objectts_data <- ts(data, order.by = data$invoice_date)
-ts_data <- ts(data, start=c(2020, 1, 1), frequency = 365)
+ts_data <- ts(data, start=c(2020, 1), frequency = 365)
 #ts_data_1 <- ts_data[, 1]
 
 # Assuming you have a dataframe named 'data' with the variables 'x1', 'x2', 'x3', 'x4', and 'y'
