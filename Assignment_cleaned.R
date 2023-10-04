@@ -40,9 +40,10 @@ ts_data <- ts(daily_data, start = c(2020, 1, 1), frequency = 365)
 
 # Plots for each features
 age_plt <- ggplot(daily_data, aes(invoice_date, age)) +
-  geom_line(aes(y = age), color = "chocolate3") +
+  geom_point(aes(y = age), color = "purple") +
   theme_minimal() +
   labs(x = NULL, y = "Age")
+
 
 categories_plt <- ggplot(daily_data, aes(invoice_date, categories)) +
   geom_line(aes(y = categories), color = "chocolate3") +
@@ -50,7 +51,7 @@ categories_plt <- ggplot(daily_data, aes(invoice_date, categories)) +
   labs( x = NULL, y = "Categories")
 
 price_plt <- ggplot(daily_data, aes(invoice_date, price)) +
-  geom_line(aes(y = price), color = "chocolate3") +
+  geom_point(aes(y = price), color = "purple") +
   theme_minimal() +
   labs(title = "Price Plot", x = NULL, y = "Price")
 
@@ -60,45 +61,35 @@ shopping_mall_plt <- ggplot(daily_data, aes(invoice_date, shopping_mall)) +
   labs(x = NULL, y = "Shopping Mall")
 
 total_quantity_plt <- ggplot(daily_data, aes(invoice_date, total_quantity)) +
-  geom_line(aes(y = total_quantity), color = "chocolate3") +
+  geom_point(aes(y = total_quantity), color = "purple") +
   theme_minimal() +
   labs( x = NULL, y = "Total Quantity")
 
 # Arrange the plots in a 1x5 grid with titles and axis labels
 grid.arrange(age_plt, categories_plt, price_plt, shopping_mall_plt, total_quantity_plt, ncol = 1, nrow = 5)
 
+## Task 1.2: Distribution for each sales data ##
 
-# Assuming your dataset is named 'mydata'
-ggplot(data = daily_data, aes(x = invoice_date)) +
-  geom_line(aes(y = categories), color = "blue") +
-  geom_line(aes(y = shopping_mall), color = "red") +
-  labs(
-    title = "Multiple Time Series Plot",
-    x = "Date ",
-    y = "Value"
-  ) + theme_minimal()
+# Create a list of variable names
+variables <- c("age", "categories", "price", "shopping_mall", "total_quantity")
 
-plot(daily_data)
+# Create and save individual distribution plots for each variable
+plots <- lapply(variables, function(var) {
+  ggplot(daily_data, aes(x = get(var))) +
+    geom_histogram(fill = "purple", color = "black", bins = 30) +
+    labs(title = paste("Distribution of", var),
+         x = var, y = "Frequency") +
+    theme_minimal()
+})
 
-plot(ts_data)
+# Arrange the plots in a grid (e.g., in a 1x5 grid)
+grid.arrange(grobs = plots, ncol = 5)
+
+
+
+## Task 1.3: Correlation and scatter plots ##
 correlation_matrix <- cor(ts_data)
 correlation_df <- melt(correlation_matrix)
-
-plot(correlation_df)
-
-# Create a ggplot for the correlation matrix
-ggplot(data = correlation_df, aes(x = Var1, y = Var2, fill = value)) +
-  geom_tile() +
-  scalefill(low = "blue", high = "red") +
-  theme_minimal() +
-  labs(title = "Correlation Matrix Heatmap")
-
-
-print(correlation_matrix)
-plot(correlation_matrix)
-
-correlation_matrix <- cor(matrix(rnorm(100), ncol = 10))
-
 # Convert the correlation matrix to a data frame suitable for plotting
 correlation_df <- melt(correlation_matrix)
 
@@ -124,9 +115,6 @@ df <- data.frame(
   y = ts_data[, "total_quantity"]
 )
 
-plot(df)
-
-cor(df)
 
 #create 5 modal formula
 
