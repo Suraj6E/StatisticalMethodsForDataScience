@@ -76,7 +76,7 @@ variables <- c("age", "categories", "price", "shopping_mall", "total_quantity")
 # Create and save individual distribution plots for each variable
 plots <- lapply(variables, function(var) {
   ggplot(daily_data, aes(x = get(var))) +
-    geom_histogram(fill = "purple", color = "black", bins = 30) +
+    geom_histogram(fill = "purple", color = "chocolate3", bins = 30) +
     labs(title = paste("Distribution of", var),
          x = var, y = "Frequency") +
     theme_minimal()
@@ -96,11 +96,9 @@ correlation_df <- melt(correlation_matrix)
 # Create a ggplot for the correlation matrix
 ggplot(data = correlation_df, aes(x = Var1, y = Var2, fill = value)) +
   geom_tile() +
-  scale_fill_gradient(low = "blue", high = "red") +
+  scale_fill_gradient(low = "purple", high = "chocolate3") +
   theme_minimal() +
   labs(title = "Correlation Matrix Heatmap")
-
-
 
 
 
