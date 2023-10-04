@@ -47,6 +47,7 @@ heatmap.2(correlation_matrix,
 
 correlation_matrix <- cor(ts_data)
 
+plot(correlation_matrix)
 # Print the correlation matrix
 print(correlation_matrix)
 

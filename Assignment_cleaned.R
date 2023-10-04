@@ -3,7 +3,9 @@ library(ggplot2)
 library(gridExtra)
 library(dplyr)
 
+library(reshape2)  # For data transformation
 
+options(scipen = 999)  # Setting scipen to a high value to prevent scientific notation
 
 #read customer shopping data 
 data <- read.csv("./customer_shopping_data.csv")
@@ -23,17 +25,59 @@ data <- data[order(data$invoice_date), ]
 daily_data <- data %>%
   group_by(invoice_date) %>%
   summarize(
-    age = median(age),
-    categories = n_distinct(category),
-    price = sum(price),
-    shopping_mall = n_distinct(shopping_mall),
-    total_quantity = sum(quantity),
+    age = median(age),                         # median age among all ages
+    categories = n_distinct(category),          # number of distinct categories
+    price = sum(price),                         # sum of price for all sales
+    shopping_mall = n_distinct(shopping_mall),  # number of distinct shopping malls
+    total_quantity = sum(quantity)             # total quantities
   )
+
+
+ggplot(daily_data, aes(invoice_date)) + 
+        #geom_point(aes(y = age), color = "blue") +
+        geom_point(aes(y = categories), color = "red") +
+        theme_light()
+
+# Assuming your dataset is named 'mydata'
+ggplot(data = daily_data, aes(x = invoice_date)) +
+  geom_line(aes(y = categories), color = "blue") +
+  geom_line(aes(y = shopping_mall), color = "red") +
+  labs(
+    title = "Multiple Time Series Plot",
+    x = "Date ",
+    y = "Value"
+  ) + theme_minimal()
 
 plot(daily_data)
 ts_data <- ts(daily_data, start = c(2020, 1, 1), frequency = 365)
 
+plot(ts_data)
+correlation_matrix <- cor(ts_data)
+correlation_df <- melt(correlation_matrix)
 
+plot(correlation_df)
+
+# Create a ggplot for the correlation matrix
+ggplot(data = correlation_df, aes(x = Var1, y = Var2, fill = value)) +
+  geom_tile() +
+  scalefill(low = "blue", high = "red") +
+  theme_minimal() +
+  labs(title = "Correlation Matrix Heatmap")
+
+print(correlation_matrix)
+plot(correlation_matrix)
+
+correlation_matrix <- cor(matrix(rnorm(100), ncol = 10))
+
+# Convert the correlation matrix to a data frame suitable for plotting
+correlation_df <- melt(correlation_matrix)
+
+# Create a ggplot for the correlation matrix
+ggplot(data = correlation_df, aes(x = Var1, y = Var2, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient(low = "blue", high = "red") +
+  theme_minimal() +
+  labs(title = "Correlation Matrix Heatmap")
 
 
 
@@ -49,6 +93,7 @@ df <- data.frame(
   x4 = ts_data[, "shopping_mall"],
   y = ts_data[, "total_quantity"]
 )
+
 plot(df)
 
 cor(df)
@@ -289,12 +334,22 @@ par(mfrow = c(1, 1))  # Reset plotting parameters to default
 # Calculate means of errors for each model
 mean_errors <- c(mean(errors1), mean(errors2), mean(errors3), mean(errors4), mean(errors5))
 
+skews <- c(skewness(errors1), skewness(errors2), skewness(errors3), skewness(errors4), skewness(errors5))
+
+kurts <- c(kurtosis(errors1), kurtosis(errors2), kurtosis(errors3), kurtosis(errors4), kurtosis(errors5))
+
+sds <- c(sd(errors1), sd(errors2), sd(errors3), sd(errors4), sd(errors5))
+
+
 # Create a table
 result_table <- data.frame(
   Model = paste("Model", 1:5),
   Mean_Error = mean_errors,
   AIC = aic_values,
-  BIC = bic_values
+  BIC = bic_values,
+  skews = skews,
+  kurts = kurts,
+  sds = sds
 )
 
 # Print the result table
