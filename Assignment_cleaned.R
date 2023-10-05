@@ -88,19 +88,63 @@ grid.arrange(grobs = plots, ncol = 5)
 
 
 ## Task 1.3: Correlation and scatter plots ##
+
+### correlation ###
 correlation_matrix <- cor(ts_data)
 correlation_df <- melt(correlation_matrix)
 # Convert the correlation matrix to a data frame suitable for plotting
 correlation_df <- melt(correlation_matrix)
 
 # Create a ggplot for the correlation matrix
-ggplot(data = correlation_df, aes(x = Var1, y = Var2, fill = value)) +
+heatmap_plot <- ggplot(data = correlation_df, aes(x = Var1, y = Var2, fill = value)) +
   geom_tile() +
-  scale_fill_gradient(low = "purple", high = "chocolate3") +
+  scale_fill_gradient(low = "blue", high = "red") +
   theme_minimal() +
   labs(title = "Correlation Matrix Heatmap")
 
+# Add numbers to the heatmap
+heatmap_plot +
+  geom_text(aes(label = round(value, 2)), vjust = 1)  # Adjust 'vjust' for label position
 
+
+
+### scatterplot ###
+
+# Scatter plot between age and predicted sales quantity
+age_plot <- ggplot(data = daily_data, aes(x = age, y = total_quantity)) +
+  geom_point(fill = "purple", color = "chocolate3") +
+  labs(title = "Scatter Plot of Age vs.  Sales Quantity",
+       x = "Age",
+       y = " Sales Quantity") +
+  theme_minimal()
+
+# Scatter plot between Categories and predicted sales quantity
+categories_plot <- ggplot(data = daily_data, aes(x = categories, y = total_quantity)) +
+  geom_point(fill = "purple", color = "chocolate3") +
+  labs(title = "Scatter Plot of Price vs.  Sales Quantity",
+       x = "Categories ",
+       y = "Sales Quantity") +
+  theme_minimal()
+
+# Scatter plot between price and predicted sales quantity
+price_plot <- ggplot(data = daily_data, aes(x = price, y = total_quantity)) +
+  geom_point(fill = "purple", color = "chocolate3") +
+  labs(title = "Scatter Plot of Price vs. Sales Quantity",
+       x = "Price",
+       y = "Sales Quantity") +
+  theme_minimal()
+
+
+# Scatter plot between price and predicted sales quantity
+shopping_malls_plot <- ggplot(data = daily_data, aes(x = shopping_mall, y = total_quantity)) +
+  geom_point(fill = "purple", color = "chocolate3") +
+  labs(title = "Scatter Plot of shopping malls vs. Sales Quantity",
+       x = "Shopping Malls",
+       y = "Sales Quantity") +
+  theme_minimal()
+
+# Arrange the scatter plots in a grid (e.g., in a 2x2 grid)
+grid.arrange(age_plot, categories_plot, price_plot, shopping_malls_plot, ncol = 2, nrow = 2)
 
 
 #task 2: Regression – modeling the relationship between sales data
