@@ -2,6 +2,7 @@
 library(ggplot2)
 library(gridExtra)
 library(dplyr)
+library(e1071)
 library(reshape2)  # For data transformation
 
 options(scipen = 999)  # Setting scipen to a high value to prevent scientific notation
@@ -409,7 +410,8 @@ result_table <- data.frame(
   BIC = bic_values,
   skews = skews,
   kurts = kurts,
-  sds = sds
+  sds = sds,
+  log_likelihood = log_likelihood_values
 )
 
 # Print the result table
@@ -471,8 +473,6 @@ success_rate <- mean(results$successful_prediction) * 100
 
 # Print the success rate
 cat("Success Rate on Predictions:", success_rate, "%\n")
-
-
 
 
 
