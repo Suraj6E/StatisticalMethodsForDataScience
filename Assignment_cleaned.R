@@ -4,6 +4,8 @@ library(gridExtra) # For visualize multiple charts
 library(dplyr) # For summarize dataset
 library(e1071) # For graph calculation
 library(reshape2)  # For data transformation
+library(abc) # for task 3
+
 
 options(scipen = 999)  # Setting scipen to a high value to prevent scientific notation
 
@@ -207,6 +209,7 @@ estimated_parameters_list <- list(
   Model5 = coef(model5)
 )
 
+print(estimated_parameters_list$Model1)
 
 
 # Function to extract coefficients for Model 1
@@ -323,6 +326,7 @@ rss_df <- data.frame(
 
 # Print the RSS for each model
 print(rss_df)
+
 
 
 ### Task 2.3 ###
@@ -502,7 +506,8 @@ train_data <- df[train_index, ]
 test_data <- df[-train_index, ]
 
 # Fit the "best" model (Model 4) using the training data
-best_model <- lm(y ~ poly(x2, 2, raw = TRUE) + poly(x1, 3, raw = TRUE) + poly(x3, 4, raw = TRUE), data = train_data)
+best_model <- lm(y ~ poly(x4, 1, raw = TRUE) + poly(x1, 2, raw = TRUE) + poly(x1, 3, raw = TRUE) +
+                      poly(x2, 4, raw = TRUE) + poly(x1, 4, raw = TRUE), data = df)
 
 # Predictions on the testing data
 predictions <- predict(best_model, newdata = test_data, interval = "prediction", level = 0.95)
@@ -520,14 +525,40 @@ results <- data.frame(
 
 plot(results)
 
+# Create a scatterplot for training data
+train_plot <- ggplot(train_data, aes(x = x1, y = y)) +
+  geom_point(color = "blue") +
+  labs(title = "Training Data", x = "x1", y = "y")
+
+# Create a scatterplot for test data
+test_plot <- ggplot(test_data, aes(x = x1, y = y)) +
+  geom_point(color = "red") +
+  labs(title = "Test Data", x = "x1", y = "y")
+
+# Create a scatterplot for predicted vs. true data with prediction intervals
+results_plot <- ggplot(results, aes(x = x1, y = y_pred)) +
+  geom_point(color = "blue", size = 3) +
+  geom_errorbar(aes(ymin = lower_bound, ymax = upper_bound), width = 0.2, color = "blue") +
+  geom_point(data = results, aes(x = x1, y = y_true), color = "red", size = 3) +
+  labs(title = "Predicted vs. True Data with Prediction Intervals", x = "x1", y = "y")
+
+grid.arrange(train_plot, test_plot, results_plot, ncol = 2)
+
+
 # Create a scatterplot of the testing data points with prediction intervals
-ggplot(results, aes(x = x1, y = y_true)) +
-  geom_point() +
-  geom_line(aes(x = x1, y = y_pred), color = "blue", size = 1) +
-  geom_errorbar(aes(ymin = lower_bound, ymax = upper_bound), width = 0.1, color = "red", size = 1) +
-  ggtitle("Model 4: Testing Data vs. Predictions with 95% Prediction Intervals") +
-  xlab("x1 (Age)") +
-  ylab("Total Sales Quantity")
+
+ggplot(results, aes(x = x1)) +
+  geom_point(aes(y = y_true, color = "True Data"), size = 2) +
+  geom_point(aes(y = y_pred, color = "Predicted Data"), size = 2) +
+  geom_errorbar(aes(ymin = lower_bound, ymax = upper_bound, color = "Prediction Intervals"), 
+                width = 0.1, size = 1) +
+  scale_color_manual(values = c("True Data" = "black", "Predicted Data" = "blue", "Prediction Intervals" = "red"),
+                     labels = c("True Data", "Predicted Data", "Prediction Intervals")) +
+  ggtitle("Testing Data vs. Predictions of Modal 1") +
+  xlab("Test Data") +
+  ylab("Values") +
+  theme(legend.title = element_blank())
+
 
 
 
@@ -551,7 +582,144 @@ cat("Success Rate on Predictions:", success_rate, "%\n")
 
 
 ######## Task 3 #########
+# Task 3: Approximate Bayesian Computation (ABC)
 
-### Task 3.1 ###
+
+# Task 3.1: Compute 2 parameter posterior distributions
+
+# Creator vector of theta_hat of selected model 1 and sorting them to find out two largest absolute value and printing it
+best_model <- lm(y ~ poly(x4, 1, raw = TRUE) + poly(x1, 2, raw = TRUE) + poly(x1, 3, raw = TRUE) +
+                   poly(x2, 4, raw = TRUE) + poly(x1, 4, raw = TRUE), data = df)
+
+
+
+#Choosing parameters
+
+theta_bias <- 3342.67171137
+theta_four <- 34100.45606748
+
+#Constant parameter
+
+theta_one  <-  0.010038614  
+theta_three   <- -0.001912836
+
+
+# Initial values
+
+arr_1 = 0
+arr_2=0
+f_value=0
+s_value=0
+
+
+# Calculating epsilon 
+
+epsilon <- rss_df$RSS[1] * 2
+
+# Number of iteration  to determines how many times the for loop will repeat and generate new values for the parameters.
+
+# A larger number of iterations may result in a more accurate estimate, but will also increase the computational time.
+num <- 100 
+
+##Calculating Y-hat for performing rejection ABC 
+
+counter <- 0
+
+# Iteration from 0 -100 and calculating the range 
+
+for (i in 1:num) {
+range1 <- runif(1,-0.483065688,0.483065688) 
+range2 <- runif(1,-0.1435789,0.1435789)
+
+# Creating new vector of  two values from range1 and range2 with the constant values theta_one,theta_three. 
+New_thetahat <- matrix(c(range1,range2,theta_one,theta_three)) 
+
+# Calculating predicted response values for the current iteration of the loop
+
+New_Y_Hat <- x_model_2 %*% New_thetahat 
+
+# Calculting new RSS valur
+new_RSS <- sum((y - New_Y_Hat)^2) 
+print(new_RSS)
+
+
+# Checking if new RSS is greater than epsilon and if the condition is true, the values of range1 and range2 are stored in arrays arr_1 and arr_2 respectively. The counter is also incremented by 1. The f_value and s_value are then defined as matrices of the arrays arr_1 and arr_2 respectively.
+
+if (new_RSS > epsilon){
+arr_1[i] <- range1 
+arr_2[i] <- range2 
+counter = counter+1
+f_value <- matrix(arr_1)
+s_value <- matrix(arr_2)
+
+  } #closing else loop
+} #closing for loop
+
+
+
+## Task 3.4: Plotting the joint and marginal posterior distribution for the parameters
+
+
+# Plotting histogram of new f_values and s_values
+
+# Frequency distribution of the f_value
+ggplot(data.frame(f_value), aes(x=f_value)) + 
+  geom_histogram(color = 'black', fill = "grey") + 
+  geom_rug()+ #Show the individual observations with black lines
+  labs(title = "Frequency distribution of the f_value"
+       ) + 
+  xlab("f_value") + 
+  ylab("Frequency ") 
+
+
+# Frequency distribution of the s_value
+ggplot(data.frame(s_value), aes(x=s_value)) + 
+  geom_histogram(color = 'black', fill = "grey") + 
+  geom_rug()+ #Show the individual observations with black lines
+  labs(title = "Frequency distribution of the s_value"
+       ) + 
+  xlab("s_value") + 
+  ylab("Frequency ") 
+
+
+# Plotting the joint and marginal posterior distribution
+
+# Create a data frame with the values of f_value and s_value and a column for "group"
+df <- data.frame(f_value, s_value, legend=rep(c("f_value","s_value"), each=length(f_value)/2))
+
+# Plot the scatter plot using and hiding legends
+p <- ggplot(df, aes(x=f_value, y=s_value, color=legend)) +
+  geom_point()+
+  theme(legend.position="bottom")+ # show legend in bottom
+  theme(legend.title = element_blank())+ # hide legend word
+   #guides(color=FALSE)+ # Uncomment to hide legend
+  ggtitle("Joint and Marginal Posterior Distribution")
+# 
+# Show the plot
+print(p)
+
+# Plotting the joint and marginal posterior distribution
+
+# Create a data frame with the values of f_value and s_value and a column for "group"
+df <- data.frame(f_value, s_value, legend=rep(c("f_value","s_value"), each=length(f_value)/2))
+
+# Plot the scatter plot using and hiding legends
+p <- ggplot(df, aes(x=f_value, y=s_value, color=legend)) +
+  geom_point()+
+  theme(legend.position="bottom")+
+  theme(legend.title = element_blank())+
+   #guides(color=FALSE)+ # Uncomment to hide legend
+  ggtitle("Joint and Marginal Posterior Distribution")
+# 
+# # Show the plot
+# print(p)
+
+
+# Marginal histograms by group
+ggMarginal(p, type = "histogram",
+          xparams = list(fill = 1),
+           yparams = list(fill = 1)) 
+
+
 
 
