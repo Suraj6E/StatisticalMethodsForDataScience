@@ -586,140 +586,236 @@ cat("Success Rate on Predictions:", success_rate, "%\n")
 
 
 # Task 3.1: Compute 2 parameter posterior distributions
+# Define the likelihood function for a normal distribution
 
-# Creator vector of theta_hat of selected model 1 and sorting them to find out two largest absolute value and printing it
+theta_bias_fixed <- 34100.456
+theta_2_fixed <- 3342.672
+theta_1_fixed <- 29.39313
+theta_3_fixed <- -1.949769
+theta_4_fixed <- 36.0437
+theta_5_fixed <- 0.01168091
+
+# Define the likelihood function for the linear regression model
+likelihood <- function(y, mu, sigma) {
+  -0.5 * sum(log(2 * pi * sigma^2) + ((y - mu)^2) / (sigma^2))
+}
+
+# Define the prior for each parameter (you can use your fixed values as priors)
+prior <- function(theta, fixed_value, variance) {
+  -0.5 * sum(log(2 * pi * variance) + ((theta - fixed_value)^2) / variance)
+}
+
+# Initialize MCMC settings
+n_iterations <- 10000
+burn_in <- 1000
+n_parameters <- 7  # Number of parameters to estimate
+
+# Initialize parameter values and step sizes (you can set initial values based on your fixed values)
+theta_current <- c(
+  theta_bias = 34100.456,
+  theta_2 = 3342.672,
+  theta_1 = 29.39313,
+  theta_3 = -1.949769,
+  theta_4 = 36.0437,
+  theta_5 = 0.01168091,
+  sigma = 5  # Assuming a known standard deviation of 5
+)
+step_sizes <- c(
+  theta_bias = 100,
+  theta_2 = 100,
+  theta_1 = 1,
+  theta_3 = 1,
+  theta_4 = 1,
+  theta_5 = 1,
+  sigma = 0.1  # Adjust the step size for sigma based on your specific problem
+)
+
+# Create empty vectors to store samples
+theta_samples <- matrix(NA, nrow = n_iterations, ncol = n_parameters)
+acceptance <- rep(0, n_iterations)
+
+# Metropolis-Hastings MCMC
+for (iteration in 1:n_iterations) {
+  # Propose new parameter values
+  theta_proposed <- theta_current + rnorm(n_parameters, mean = 0, sd = step_sizes)
+  
+  # Calculate likelihood and prior for current and proposed parameters
+  mu_current <- theta_current["theta_bias"] +
+    theta_current["theta_2"] * df$x4 +
+    theta_current["theta_1"] * df$x1^2 +
+    theta_current["theta_3"] * df$x1^3 +
+    theta_current["theta_4"] * df$x2^4 +
+    theta_current["theta_5"] * df$x1^4
+  mu_proposed <- theta_proposed["theta_bias"] +
+    theta_proposed["theta_2"] * df$x4 +
+    theta_proposed["theta_1"] * df$x1^2 +
+    theta_proposed["theta_3"] * df$x1^3 +
+    theta_proposed["theta_4"] * df$x2^4 +
+    theta_proposed["theta_5"] * df$x1^4
+  
+  likelihood_current <- likelihood(df$y, mu_current, theta_current["sigma"])
+  likelihood_proposed <- likelihood(df$y, mu_proposed, theta_proposed["sigma"])
+  prior_current <- prior(theta_current["theta_bias"], 34100.456, 10000) +
+    prior(theta_current["theta_2"], 3342.672, 10000)
+  prior_proposed <- prior(theta_proposed["theta_bias"], 34100.456, 10000) +
+    prior(theta_proposed["theta_2"], 3342.672, 10000)
+  
+  # Calculate acceptance probability
+  acceptance_prob <- exp(
+    likelihood_proposed + prior_proposed - likelihood_current - prior_current
+  )
+  
+  # Accept or reject the proposal
+  if (runif(1) < acceptance_prob) {
+    theta_current <- theta_proposed
+    acceptance[iteration] <- 1
+  }
+  
+  # Store the current parameter values
+  theta_samples[iteration, ] <- theta_current
+}
+
+# Remove burn-in samples
+theta_samples <- theta_samples[-(1:burn_in), ]
+acceptance_rate <- mean(acceptance[-(1:burn_in)])
+
+plot(theta_samples)
+plot(acceptance_rate)
+
+# Now 'theta_samples' contains samples from the posterior distributions of your specified model parameters.
+# 'acceptance_rate' gives you the acceptance rate of the Metropolis-Hastings algorithm.
+
+# Now 'theta_samples' contains samples from the posterior distributions of theta_bias and theta_2.
+
+# Simulated data (replace with your actual data)
+set.seed(123)
+
+
+# Specify non-informative normal priors for theta_bias and theta_2
+prior_theta_bias <- rnorm(10000, mean = 0, sd = 10000)  # Large variance for non-informative prior
+prior_theta_2 <- rnorm(10000, mean = 0, sd = 10000)    # Large variance for non-informative prior
+
+# Likelihood function (normal likelihood)
+likelihood <- function(theta_bias_fixed, theta_2_fixed, daily_data) {
+  mu <- theta_bias_fixed + theta_2_fixed
+  likelihood_values <- dnorm(daily_data, mean = mu, sd = 5, log = TRUE)  # Assuming a known standard deviation of 5
+  return(sum(likelihood_values))
+}
+
+# Calculate unnormalized posterior probabilities
+posterior_unnormalized <- sapply(theta_2_fixed, function(theta_2_fixed) {
+  sapply(prior_theta_2, function(theta_2) {
+    likelihood(theta_2_fixed, theta_2_fixed, daily_data) + dnorm(theta_2_fixed, mean = 0, sd = 10000, log = TRUE) +
+      dnorm(theta_2_fixed, mean = 0, sd = 10000, log = TRUE)
+  })
+})
+
+# Calculate normalized posterior probabilities
+posterior <- exp(posterior_unnormalized - max(posterior_unnormalized))
+posterior <- posterior / sum(posterior)
+
+# Sample from the posterior (using the MCMC method)
+sample_size <- 10000
+samples_theta_bias <- sample(prior_theta_bias, size = sample_size, prob = posterior, replace = TRUE)
+samples_theta_2 <- sample(prior_theta_2, size = sample_size, prob = posterior, replace = TRUE)
+
+# Now, 'samples_theta_bias' and 'samples_theta_2' contain samples from the posterior distribution of theta_bias and theta_2.
+posterior_distribution <- data.frame(
+  samples_theta_bias = samples_theta_bias,
+  samples_theta_2 = samples_theta_2
+)
+
+plot(posterior_distribution)
+
+print(posterior_distribution);
+
+# best modal
 best_model <- lm(y ~ poly(x4, 1, raw = TRUE) + poly(x1, 2, raw = TRUE) + poly(x1, 3, raw = TRUE) +
                    poly(x2, 4, raw = TRUE) + poly(x1, 4, raw = TRUE), data = df)
 
 
 
-#Choosing parameters
 
-theta_bias <- 3342.67171137
-theta_four <- 34100.45606748
+# Create a new data frame with fixed parameter values
+df_fixed <- data.frame(
+  x1 = rep(theta_1_fixed, nrow(df)),  # Fix theta_1
+  x2 = rep(theta_2_fixed, nrow(df)),  # Fix theta_2
+  x4 = df$x4,  # Keep the original x4 values
+  y = df$y  # Keep the original y values
+)
 
-#Constant parameter
+# Fit a new linear regression model with fixed parameters
+fixed_model <- lm(y ~ poly(x4, 1, raw = TRUE) + poly(x1, 2, raw = TRUE) + poly(x1, 3, raw = TRUE) +
+                    poly(x2, 4, raw = TRUE) + poly(x1, 4, raw = TRUE), data = df_fixed)
 
-theta_one  <-  0.010038614  
-theta_three   <- -0.001912836
+# Print the summary of the fixed model
+summary(fixed_model)
+
+# Sorting theta_hat values to find two largest absolute values
+theta_hat <- coef(best_model)
+sorted_theta_hat <- sort(abs(theta_hat), decreasing = TRUE)
+two_largest_values <- sorted_theta_hat[1:2]
+
+print(two_largest_values)
+
+#largest values
+
+# Assigning parameters
+first_largest <- two_largest_values[1]
+second_largest <- two_largest_values[2]
+
+sorted_theta_hat
+
+# Initializing variables
+arr_1 <- 0
+arr_2 <- 0
+f_value <- 0
+s_value <- 0
+
+# Calculating epsilon as twice the RSS of the model
+epsilon <- sum(residuals(best_model)^2) * 2
+
+print(epsilon)
 
 
-# Initial values
+### Task 3.2 ####
 
-arr_1 = 0
-arr_2=0
-f_value=0
-s_value=0
+# Number of iterations
+num <- 100
 
+# Initialize arrays to store accepted parameter values
+accepted_range1 <- numeric(0)
+accepted_range2 <- numeric(0)
 
-# Calculating epsilon 
+# Define the range for uniform distributions
+range_min <- c(-0.483065688, -0.1435789)
+range_max <- c(0.483065688, 0.1435789)
 
-epsilon <- rss_df$RSS[1] * 2
-
-# Number of iteration  to determines how many times the for loop will repeat and generate new values for the parameters.
-
-# A larger number of iterations may result in a more accurate estimate, but will also increase the computational time.
-num <- 100 
-
-##Calculating Y-hat for performing rejection ABC 
-
-counter <- 0
-
-# Iteration from 0 -100 and calculating the range 
-
+# Iterate through the specified number of iterations
 for (i in 1:num) {
-range1 <- runif(1,-0.483065688,0.483065688) 
-range2 <- runif(1,-0.1435789,0.1435789)
+  # Generate random parameter values from uniform distributions
+  range1 <- runif(1, range_min[1], range_max[1])
+  range2 <- runif(1, range_min[2], range_max[2])
+  
+  # Create a new parameter vector with the correct variable names
+  New_thetahat <- c(x4 = range1, x1 = range2, x2 = theta_one, x3 = theta_three)
+  
+  # Calculate predicted response values using the best_model
+  New_Y_Hat <- predict(best_model, newdata = as.data.frame(t(New_thetahat)))
+  
+  # Calculate the new RSS
+  new_RSS <- sum((y - New_Y_Hat)^2)
+  
+  # Check if new_RSS is less than epsilon (acceptance criterion)
+  if (new_RSS < epsilon) {
+    # Store accepted parameter values
+    accepted_range1 <- c(accepted_range1, range1)
+    accepted_range2 <- c(accepted_range2, range2)
+  }
+}
 
-# Creating new vector of  two values from range1 and range2 with the constant values theta_one,theta_three. 
-New_thetahat <- matrix(c(range1,range2,theta_one,theta_three)) 
+# Combine the accepted parameter values into a matrix
+accepted_parameters <- cbind(accepted_range1, accepted_range2)
 
-# Calculating predicted response values for the current iteration of the loop
-
-New_Y_Hat <- x_model_2 %*% New_thetahat 
-
-# Calculting new RSS valur
-new_RSS <- sum((y - New_Y_Hat)^2) 
-print(new_RSS)
-
-
-# Checking if new RSS is greater than epsilon and if the condition is true, the values of range1 and range2 are stored in arrays arr_1 and arr_2 respectively. The counter is also incremented by 1. The f_value and s_value are then defined as matrices of the arrays arr_1 and arr_2 respectively.
-
-if (new_RSS > epsilon){
-arr_1[i] <- range1 
-arr_2[i] <- range2 
-counter = counter+1
-f_value <- matrix(arr_1)
-s_value <- matrix(arr_2)
-
-  } #closing else loop
-} #closing for loop
-
-
-
-## Task 3.4: Plotting the joint and marginal posterior distribution for the parameters
-
-
-# Plotting histogram of new f_values and s_values
-
-# Frequency distribution of the f_value
-ggplot(data.frame(f_value), aes(x=f_value)) + 
-  geom_histogram(color = 'black', fill = "grey") + 
-  geom_rug()+ #Show the individual observations with black lines
-  labs(title = "Frequency distribution of the f_value"
-       ) + 
-  xlab("f_value") + 
-  ylab("Frequency ") 
-
-
-# Frequency distribution of the s_value
-ggplot(data.frame(s_value), aes(x=s_value)) + 
-  geom_histogram(color = 'black', fill = "grey") + 
-  geom_rug()+ #Show the individual observations with black lines
-  labs(title = "Frequency distribution of the s_value"
-       ) + 
-  xlab("s_value") + 
-  ylab("Frequency ") 
-
-
-# Plotting the joint and marginal posterior distribution
-
-# Create a data frame with the values of f_value and s_value and a column for "group"
-df <- data.frame(f_value, s_value, legend=rep(c("f_value","s_value"), each=length(f_value)/2))
-
-# Plot the scatter plot using and hiding legends
-p <- ggplot(df, aes(x=f_value, y=s_value, color=legend)) +
-  geom_point()+
-  theme(legend.position="bottom")+ # show legend in bottom
-  theme(legend.title = element_blank())+ # hide legend word
-   #guides(color=FALSE)+ # Uncomment to hide legend
-  ggtitle("Joint and Marginal Posterior Distribution")
-# 
-# Show the plot
-print(p)
-
-# Plotting the joint and marginal posterior distribution
-
-# Create a data frame with the values of f_value and s_value and a column for "group"
-df <- data.frame(f_value, s_value, legend=rep(c("f_value","s_value"), each=length(f_value)/2))
-
-# Plot the scatter plot using and hiding legends
-p <- ggplot(df, aes(x=f_value, y=s_value, color=legend)) +
-  geom_point()+
-  theme(legend.position="bottom")+
-  theme(legend.title = element_blank())+
-   #guides(color=FALSE)+ # Uncomment to hide legend
-  ggtitle("Joint and Marginal Posterior Distribution")
-# 
-# # Show the plot
-# print(p)
-
-
-# Marginal histograms by group
-ggMarginal(p, type = "histogram",
-          xparams = list(fill = 1),
-           yparams = list(fill = 1)) 
-
-
-
+# Result: accepted_parameters contains the accepted parameter values
 
