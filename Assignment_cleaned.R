@@ -206,7 +206,6 @@ estimated_parameters_list <- list(
   Model4 = coef(model4),
   Model5 = coef(model5)
 )
-print(estimated_parameters_list$Model1)
 
 
 
@@ -214,9 +213,9 @@ print(estimated_parameters_list$Model1)
 extract_coefficients_model1 <- function(parameters) {
   coef_list <- list()
   coef_list$θ1 <- parameters["poly(x4, 1, raw = TRUE)"]
-  coef_list$θ2 <- parameters["poly(x1, 2, raw = TRUE)2"]
+  coef_list$θ2 <- parameters["poly(x1, 2, raw = TRUE)1"]
   coef_list$θ3 <- parameters["poly(x1, 3, raw = TRUE)3"]
-  coef_list$θ4 <- parameters["poly(x2, 4, raw = TRUE)4"]
+  coef_list$θ4 <- parameters["poly(x2, 4, raw = TRUE)1"]
   coef_list$θ5 <- parameters["poly(x1, 4, raw = TRUE)4"]
   coef_list$θbias <- parameters["(Intercept)"]
   return(coef_list)
@@ -225,22 +224,22 @@ extract_coefficients_model1 <- function(parameters) {
 # Function to extract coefficients for Model 2
 extract_coefficients_model2 <- function(parameters) {
   coef_list <- list()
-  coef_list$θ1 <- parameters["poly(x4, 1, raw = TRUE)1"]
+  coef_list$θ1 <- parameters["poly(x4, 1, raw = TRUE)"]
   coef_list$θ2 <- parameters["poly(x1, 3, raw = TRUE)1"]
   coef_list$θ3 <- parameters["poly(x3, 4, raw = TRUE)1"]
-  coef_list$θ4 <- 0.00
-  coef_list$θ5 <- 0.00
+  coef_list$θ4 <- NA
+  coef_list$θ5 <- NA
   coef_list$θbias <- parameters["(Intercept)"]
   return(coef_list)
 }
 # Function to extract coefficients for Model 3
 extract_coefficients_model3 <- function(parameters) {
   coef_list <- list()
-  coef_list$θ1 <- 0.00
-  coef_list$θ2 <- 0.00
-  coef_list$θ3 <- parameters["poly(x3, 3, raw = TRUE)1"]
-  coef_list$θ4 <- parameters["poly(x3, 4, raw = TRUE)1"]
-  coef_list$θ5 <- 0.00
+  coef_list$θ1 <- parameters["poly(x3, 3, raw = TRUE)1"]
+  coef_list$θ2 <- parameters["poly(x3, 4, raw = TRUE)4"]
+  coef_list$θ3 <- NA
+  coef_list$θ4 <- NA
+  coef_list$θ5 <- NA
   coef_list$θbias <- parameters["(Intercept)"]
   return(coef_list)
 }
@@ -248,11 +247,11 @@ extract_coefficients_model3 <- function(parameters) {
 # Function to extract coefficients for Model 4
 extract_coefficients_model4 <- function(parameters) {
   coef_list <- list()
-  coef_list$θ1 <- parameters["poly(x2, 1, raw = TRUE)1"]
+  coef_list$θ1 <- parameters["poly(x2, 1, raw = TRUE)"]
   coef_list$θ2 <- parameters["poly(x1, 3, raw = TRUE)1"]
-  coef_list$θ3 <- 0.00
+  coef_list$θ3 <- NA
   coef_list$θ4 <- parameters["poly(x3, 4, raw = TRUE)1"]
-  coef_list$θ5 <- 0.00
+  coef_list$θ5 <- NA
   coef_list$θbias <- parameters["(Intercept)"]
   return(coef_list)
 }
@@ -260,11 +259,11 @@ extract_coefficients_model4 <- function(parameters) {
 # Function to extract coefficients for Model 5
 extract_coefficients_model5 <- function(parameters) {
   coef_list <- list()
-  coef_list$θ1 <- parameters["poly(x4, 1, raw = TRUE)1"]
+  coef_list$θ1 <- parameters["poly(x4, 1, raw = TRUE)"]
   coef_list$θ2 <- parameters["poly(x1, 2, raw = TRUE)1"]
-  coef_list$θ3 <- parameters["poly(x1, 3, raw = TRUE)1"]
+  coef_list$θ3 <- parameters["poly(x1, 3, raw = TRUE)3"]
   coef_list$θ4 <- parameters["poly(x3, 4, raw = TRUE)1"]
-  coef_list$θ5 <- 0.00
+  coef_list$θ5 <- NA
   coef_list$θbias <- parameters["(Intercept)"]
   return(coef_list)
 }
@@ -291,11 +290,11 @@ for (model_name in names(estimated_parameters_list)) {
   } else if (model_name == "Model2") {
     coefficients <- extract_coefficients_model2(parameters)
   }else if (model_name == "Model3") {
-    coefficients <- extract_coefficients_model2(parameters)
+    coefficients <- extract_coefficients_model3(parameters)
   }else if (model_name == "Model4") {
-    coefficients <- extract_coefficients_model2(parameters)
+    coefficients <- extract_coefficients_model4(parameters)
   }else if (model_name == "Model5") {
-    coefficients <- extract_coefficients_model2(parameters)
+    coefficients <- extract_coefficients_model5(parameters)
   }
   
   # Add coefficients to the DataFrame
@@ -304,8 +303,6 @@ for (model_name in names(estimated_parameters_list)) {
 
 # Print the coefficients DataFrame
 print(coefficients_df)
-plot(coefficients_df)
-
 
 
 ### Task 2.2 ###
