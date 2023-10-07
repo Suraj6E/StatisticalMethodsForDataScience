@@ -1,8 +1,8 @@
-#imports
-library(ggplot2)
-library(gridExtra)
-library(dplyr)
-library(e1071)
+#library used
+library(ggplot2) # for visualization
+library(gridExtra) # For visualize multiple charts
+library(dplyr) # For summarize dataset
+library(e1071) # For graph calculation
 library(reshape2)  # For data transformation
 
 options(scipen = 999)  # Setting scipen to a high value to prevent scientific notation
@@ -20,8 +20,12 @@ data$invoice_date <- as.Date(data$invoice_date, format = "%d/%m/%Y")
 data <- data[order(data$invoice_date), ]
 
 
-## convert data into unique time series ##
 
+#remove unique values
+data$invoice_no <- NULL
+data$customer_id <- NULL
+
+## convert data into unique time series ##
 daily_data <- data %>%
   group_by(invoice_date) %>%
   summarize(
@@ -32,16 +36,18 @@ daily_data <- data %>%
     total_quantity = sum(quantity)             # total quantities
   )
 
-#changing dataset into time series
+#changing data set into time series
 ts_data <- ts(daily_data, start = c(2020, 1, 1), frequency = 365)
 
+
+summary(daily_data)
 
 ### Task 1: Preliminary data analysis ###
 ## Task 1.1 ##
 
 # Plots for each features
 age_plt <- ggplot(daily_data, aes(invoice_date, age)) +
-  geom_point(aes(y = age), color = "purple") +
+  geom_line(aes(y = age), color = "purple") +
   theme_minimal() +
   labs(x = NULL, y = "Age")
 
@@ -52,7 +58,7 @@ categories_plt <- ggplot(daily_data, aes(invoice_date, categories)) +
   labs( x = NULL, y = "Categories")
 
 price_plt <- ggplot(daily_data, aes(invoice_date, price)) +
-  geom_point(aes(y = price), color = "purple") +
+  geom_line(aes(y = price), color = "purple") +
   theme_minimal() +
   labs(title = "Price Plot", x = NULL, y = "Price")
 
@@ -62,7 +68,7 @@ shopping_mall_plt <- ggplot(daily_data, aes(invoice_date, shopping_mall)) +
   labs(x = NULL, y = "Shopping Mall")
 
 total_quantity_plt <- ggplot(daily_data, aes(invoice_date, total_quantity)) +
-  geom_point(aes(y = total_quantity), color = "purple") +
+  geom_line(aes(y = total_quantity), color = "purple") +
   theme_minimal() +
   labs( x = NULL, y = "Total Quantity")
 
