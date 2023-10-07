@@ -77,21 +77,37 @@ grid.arrange(age_plt, categories_plt, price_plt, shopping_mall_plt, total_quanti
 
 ## Task 1.2: Distribution for each sales data ##
 
-# Create a list of variable names
-variables <- c("age", "categories", "price", "shopping_mall", "total_quantity")
-
 # Create and save individual distribution plots for each variable
+
 plots <- lapply(variables, function(var) {
-  ggplot(daily_data, aes(x = get(var))) +
+  p <- ggplot(daily_data, aes(x = get(var), )) +
     geom_histogram(fill = "purple", color = "chocolate3", bins = 30) +
+    scale_fill_manual(values = c("A" = "blue", "B" = "red", "C" = "green"), name = "Groups") +
     labs(title = paste("Distribution of", var),
          x = var, y = "Frequency") +
     theme_minimal()
+  
+  # Calculate mean and median
+  mean_val <- mean(daily_data[[var]], na.rm = TRUE)
+  median_val <- median(daily_data[[var]], na.rm = TRUE)
+  # Add mean and median lines with custom colors and show legend
+  p <- p +
+    geom_vline(
+      aes(xintercept = mean_val, color = "Mean Line"),
+      linetype = "dashed", size = 1, show.legend = TRUE
+    ) +
+    geom_vline(
+      aes(xintercept = median_val, color = "Median Line"),
+      linetype = "dashed", size = 1, show.legend = TRUE
+    ) +
+    annotate("text", x = 0, y = max(hist(daily_data[[var]])$count), label = "")
+    
+  
+  return(p)
 })
 
 # Arrange the plots in a grid (e.g., in a 1x5 grid)
-grid.arrange(grobs = plots, ncol = 5)
-
+grid.arrange(grobs = plots, ncol = 2, nrow = 3)
 
 
 ## Task 1.3: Correlation and scatter plots ##
@@ -167,29 +183,20 @@ df <- data.frame(
 
 #create 5 modal formula
 
-model1 <- lm(y ~ poly(x4, 4, raw = TRUE) + poly(x1, 2, raw = TRUE) + poly(x1, 3, raw = TRUE) +
+model1 <- lm(y ~ poly(x4, 1, raw = TRUE) + poly(x1, 2, raw = TRUE) + poly(x1, 3, raw = TRUE) +
                poly(x2, 4, raw = TRUE) + poly(x1, 4, raw = TRUE), data = df)
 
-model2 <- lm(y ~ poly(x4, 4, raw = TRUE) + poly(x1, 3, raw = TRUE) + poly(x3, 4, raw = TRUE), data = df)
+model2 <- lm(y ~ poly(x4, 1, raw = TRUE) + poly(x1, 3, raw = TRUE) + poly(x3, 4, raw = TRUE), data = df)
 
 model3 <- lm(y ~ poly(x3, 3, raw = TRUE) + poly(x3, 4, raw = TRUE), data = df)
 
-model4 <- lm(y ~ poly(x2, 2, raw = TRUE) + poly(x1, 3, raw = TRUE) + poly(x3, 4, raw = TRUE), data = df)
+model4 <- lm(y ~ poly(x2, 1, raw = TRUE) + poly(x1, 3, raw = TRUE) + poly(x3, 4, raw = TRUE), data = df)
 
-model5 <- lm(y ~ poly(x4, 4, raw = TRUE) + poly(x1, 2, raw = TRUE) + poly(x1, 3, raw = TRUE) +
+model5 <- lm(y ~ poly(x4, 1, raw = TRUE) + poly(x1, 2, raw = TRUE) + poly(x1, 3, raw = TRUE) +
                poly(x3, 4, raw = TRUE), data = df)
 
 
 #Task 2.1: Estimate modal parameters 𝜃for every candidate modal using least squre
-
-# Estimate model parameters using the least squares formula
-#theta_hat_model1 <- solve(t(model.matrix(model1)) %*% model.matrix(model1)) %*% t(model.matrix(model1)) %*% df$y
-#theta_hat_model2 <- solve(t(model.matrix(model2)) %*% model.matrix(model2)) %*% t(model.matrix(model2)) %*% df$y
-#theta_hat_model3 <- solve(t(model.matrix(model3)) %*% model.matrix(model3)) %*% t(model.matrix(model3)) %*% df$y
-#theta_hat_model4 <- solve(t(model.matrix(model4)) %*% model.matrix(model4)) %*% t(model.matrix(model4)) %*% df$y
-#theta_hat_model5 <- solve(t(model.matrix(model5)) %*% model.matrix(model5)) %*% t(model.matrix(model5)) %*% df$y
-
-##Alternatve
 
 # Create a list to store the estimated parameters for each model
 estimated_parameters_list <- list(
@@ -199,14 +206,65 @@ estimated_parameters_list <- list(
   Model4 = coef(model4),
   Model5 = coef(model5)
 )
+print(estimated_parameters_list$Model1)
 
-# Create a function to extract specific coefficients
-extract_coefficients <- function(parameters) {
+
+
+# Function to extract coefficients for Model 1
+extract_coefficients_model1 <- function(parameters) {
   coef_list <- list()
-  coef_list$θ1 <- parameters["poly(x4, 4, raw = TRUE)1"]
+  coef_list$θ1 <- parameters["poly(x4, 1, raw = TRUE)"]
+  coef_list$θ2 <- parameters["poly(x1, 2, raw = TRUE)2"]
+  coef_list$θ3 <- parameters["poly(x1, 3, raw = TRUE)3"]
+  coef_list$θ4 <- parameters["poly(x2, 4, raw = TRUE)4"]
+  coef_list$θ5 <- parameters["poly(x1, 4, raw = TRUE)4"]
+  coef_list$θbias <- parameters["(Intercept)"]
+  return(coef_list)
+}
+
+# Function to extract coefficients for Model 2
+extract_coefficients_model2 <- function(parameters) {
+  coef_list <- list()
+  coef_list$θ1 <- parameters["poly(x4, 1, raw = TRUE)1"]
   coef_list$θ2 <- parameters["poly(x1, 3, raw = TRUE)1"]
   coef_list$θ3 <- parameters["poly(x3, 4, raw = TRUE)1"]
-  coef_list$θ4 <- parameters["poly(x2, 2, raw = TRUE)1"]
+  coef_list$θ4 <- 0.00
+  coef_list$θ5 <- 0.00
+  coef_list$θbias <- parameters["(Intercept)"]
+  return(coef_list)
+}
+# Function to extract coefficients for Model 3
+extract_coefficients_model3 <- function(parameters) {
+  coef_list <- list()
+  coef_list$θ1 <- 0.00
+  coef_list$θ2 <- 0.00
+  coef_list$θ3 <- parameters["poly(x3, 3, raw = TRUE)1"]
+  coef_list$θ4 <- parameters["poly(x3, 4, raw = TRUE)1"]
+  coef_list$θ5 <- 0.00
+  coef_list$θbias <- parameters["(Intercept)"]
+  return(coef_list)
+}
+
+# Function to extract coefficients for Model 4
+extract_coefficients_model4 <- function(parameters) {
+  coef_list <- list()
+  coef_list$θ1 <- parameters["poly(x2, 1, raw = TRUE)1"]
+  coef_list$θ2 <- parameters["poly(x1, 3, raw = TRUE)1"]
+  coef_list$θ3 <- 0.00
+  coef_list$θ4 <- parameters["poly(x3, 4, raw = TRUE)1"]
+  coef_list$θ5 <- 0.00
+  coef_list$θbias <- parameters["(Intercept)"]
+  return(coef_list)
+}
+
+# Function to extract coefficients for Model 5
+extract_coefficients_model5 <- function(parameters) {
+  coef_list <- list()
+  coef_list$θ1 <- parameters["poly(x4, 1, raw = TRUE)1"]
+  coef_list$θ2 <- parameters["poly(x1, 2, raw = TRUE)1"]
+  coef_list$θ3 <- parameters["poly(x1, 3, raw = TRUE)1"]
+  coef_list$θ4 <- parameters["poly(x3, 4, raw = TRUE)1"]
+  coef_list$θ5 <- 0.00
   coef_list$θbias <- parameters["(Intercept)"]
   return(coef_list)
 }
@@ -218,6 +276,7 @@ coefficients_df <- data.frame(
   θ2 = numeric(0),
   θ3 = numeric(0),
   θ4 = numeric(0),
+  θ5 = numeric(0),
   θbias = numeric(0)
 )
 
@@ -225,7 +284,19 @@ coefficients_df <- data.frame(
 # Loop through each model's estimated parameters
 for (model_name in names(estimated_parameters_list)) {
   parameters <- estimated_parameters_list[[model_name]]
-  coefficients <- extract_coefficients(parameters)
+  
+  # Extract coefficients based on the model
+  if (model_name == "Model1") {
+    coefficients <- extract_coefficients_model1(parameters)
+  } else if (model_name == "Model2") {
+    coefficients <- extract_coefficients_model2(parameters)
+  }else if (model_name == "Model3") {
+    coefficients <- extract_coefficients_model2(parameters)
+  }else if (model_name == "Model4") {
+    coefficients <- extract_coefficients_model2(parameters)
+  }else if (model_name == "Model5") {
+    coefficients <- extract_coefficients_model2(parameters)
+  }
   
   # Add coefficients to the DataFrame
   coefficients_df <- rbind(coefficients_df, cbind(Model = model_name, as.data.frame(t(coefficients))))
