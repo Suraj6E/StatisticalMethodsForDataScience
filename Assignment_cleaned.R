@@ -588,234 +588,86 @@ cat("Success Rate on Predictions:", success_rate, "%\n")
 # Task 3.1: Compute 2 parameter posterior distributions
 # Define the likelihood function for a normal distribution
 
-theta_bias_fixed <- 34100.456
-theta_2_fixed <- 3342.672
+# Initialize MCMC settings
+n_iterations <- 10000
+burn_in <- 1000
+n_parameters <- 2  # Number of parameters to estimate (theta_bias and theta_2)
+
+# Initialize parameter values for the two parameters of interest and fix others
+theta_current <- list(theta_bias = 34100.456, theta_2 = 3342.672)
+# Fix other parameters based on estimated values
 theta_1_fixed <- 29.39313
 theta_3_fixed <- -1.949769
 theta_4_fixed <- 36.0437
 theta_5_fixed <- 0.01168091
 
-# Define the likelihood function for the linear regression model
-likelihood <- function(y, mu, sigma) {
-  -0.5 * sum(log(2 * pi * sigma^2) + ((y - mu)^2) / (sigma^2))
-}
-
-# Define the prior for each parameter (you can use your fixed values as priors)
-prior <- function(theta, fixed_value, variance) {
-  -0.5 * sum(log(2 * pi * variance) + ((theta - fixed_value)^2) / variance)
-}
-
-# Initialize MCMC settings
-n_iterations <- 10000
-burn_in <- 1000
-n_parameters <- 7  # Number of parameters to estimate
-
-# Initialize parameter values and step sizes (you can set initial values based on your fixed values)
-theta_current <- c(
-  theta_bias = 34100.456,
-  theta_2 = 3342.672,
-  theta_1 = 29.39313,
-  theta_3 = -1.949769,
-  theta_4 = 36.0437,
-  theta_5 = 0.01168091,
-  sigma = 5  # Assuming a known standard deviation of 5
-)
-step_sizes <- c(
-  theta_bias = 100,
-  theta_2 = 100,
-  theta_1 = 1,
-  theta_3 = 1,
-  theta_4 = 1,
-  theta_5 = 1,
-  sigma = 0.1  # Adjust the step size for sigma based on your specific problem
-)
-
-# Create empty vectors to store samples
-theta_samples <- matrix(NA, nrow = n_iterations, ncol = n_parameters)
+# Create empty lists to store samples
+theta_samples <- vector("list", length = n_iterations)
 acceptance <- rep(0, n_iterations)
 
-# Metropolis-Hastings MCMC
+# Metropolis-Hastings MCMC targeting only theta_bias and theta_2
 for (iteration in 1:n_iterations) {
-  # Propose new parameter values
-  theta_proposed <- theta_current + rnorm(n_parameters, mean = 0, sd = step_sizes)
+  # Propose new values for theta_bias and theta_2
+  theta_bias_proposed <- theta_current$theta_bias + rnorm(1, mean = 0, sd = 100)  # Adjust step size as needed
+  theta_2_proposed <- theta_current$theta_2 + rnorm(1, mean = 0, sd = 100)  # Adjust step size as needed
   
   # Calculate likelihood and prior for current and proposed parameters
-  mu_current <- theta_current["theta_bias"] +
-    theta_current["theta_2"] * df$x4 +
-    theta_current["theta_1"] * df$x1^2 +
-    theta_current["theta_3"] * df$x1^3 +
-    theta_current["theta_4"] * df$x2^4 +
-    theta_current["theta_5"] * df$x1^4
-  mu_proposed <- theta_proposed["theta_bias"] +
-    theta_proposed["theta_2"] * df$x4 +
-    theta_proposed["theta_1"] * df$x1^2 +
-    theta_proposed["theta_3"] * df$x1^3 +
-    theta_proposed["theta_4"] * df$x2^4 +
-    theta_proposed["theta_5"] * df$x1^4
-  
-  likelihood_current <- likelihood(df$y, mu_current, theta_current["sigma"])
-  likelihood_proposed <- likelihood(df$y, mu_proposed, theta_proposed["sigma"])
-  prior_current <- prior(theta_current["theta_bias"], 34100.456, 10000) +
-    prior(theta_current["theta_2"], 3342.672, 10000)
-  prior_proposed <- prior(theta_proposed["theta_bias"], 34100.456, 10000) +
-    prior(theta_proposed["theta_2"], 3342.672, 10000)
+  likelihood_current <- likelihood(df$y, theta_current$theta_bias + theta_current$theta_2 * df$x4, 5)
+  likelihood_proposed <- likelihood(df$y, theta_bias_proposed + theta_2_proposed * df$x4, 5)
+  prior_current <- prior(theta_current$theta_bias, theta_1_fixed, 10000) + prior(theta_current$theta_2, theta_2_fixed, 10000)
+  prior_proposed <- prior(theta_bias_proposed, theta_1_fixed, 10000) + prior(theta_2_proposed, theta_2_fixed, 10000)
   
   # Calculate acceptance probability
-  acceptance_prob <- exp(
-    likelihood_proposed + prior_proposed - likelihood_current - prior_current
-  )
+  acceptance_prob <- exp(likelihood_proposed + prior_proposed - likelihood_current - prior_current)
   
   # Accept or reject the proposal
   if (runif(1) < acceptance_prob) {
-    theta_current <- theta_proposed
+    theta_current$theta_bias <- theta_bias_proposed
+    theta_current$theta_2 <- theta_2_proposed
     acceptance[iteration] <- 1
   }
   
   # Store the current parameter values
-  theta_samples[iteration, ] <- theta_current
+  theta_samples[[iteration]] <- theta_current
 }
 
 # Remove burn-in samples
-theta_samples <- theta_samples[-(1:burn_in), ]
+theta_samples <- theta_samples[-(1:burn_in)]
 acceptance_rate <- mean(acceptance[-(1:burn_in)])
 
-plot(theta_samples)
-plot(acceptance_rate)
 
-# Now 'theta_samples' contains samples from the posterior distributions of your specified model parameters.
+# Now 'theta_samples' contains samples from the posterior distributions of theta_bias and theta_2,
+# while keeping all other parameters fixed as constants.
 # 'acceptance_rate' gives you the acceptance rate of the Metropolis-Hastings algorithm.
 
-# Now 'theta_samples' contains samples from the posterior distributions of theta_bias and theta_2.
 
-# Simulated data (replace with your actual data)
-set.seed(123)
+# Extract the posterior samples for theta_bias and theta_2
+theta_bias_samples <- sapply(theta_samples, function(sample) sample$theta_bias)
+theta_2_samples <- sapply(theta_samples, function(sample) sample$theta_2)
 
-
-# Specify non-informative normal priors for theta_bias and theta_2
-prior_theta_bias <- rnorm(10000, mean = 0, sd = 10000)  # Large variance for non-informative prior
-prior_theta_2 <- rnorm(10000, mean = 0, sd = 10000)    # Large variance for non-informative prior
-
-# Likelihood function (normal likelihood)
-likelihood <- function(theta_bias_fixed, theta_2_fixed, daily_data) {
-  mu <- theta_bias_fixed + theta_2_fixed
-  likelihood_values <- dnorm(daily_data, mean = mu, sd = 5, log = TRUE)  # Assuming a known standard deviation of 5
-  return(sum(likelihood_values))
-}
-
-# Calculate unnormalized posterior probabilities
-posterior_unnormalized <- sapply(theta_2_fixed, function(theta_2_fixed) {
-  sapply(prior_theta_2, function(theta_2) {
-    likelihood(theta_2_fixed, theta_2_fixed, daily_data) + dnorm(theta_2_fixed, mean = 0, sd = 10000, log = TRUE) +
-      dnorm(theta_2_fixed, mean = 0, sd = 10000, log = TRUE)
-  })
-})
-
-# Calculate normalized posterior probabilities
-posterior <- exp(posterior_unnormalized - max(posterior_unnormalized))
-posterior <- posterior / sum(posterior)
-
-# Sample from the posterior (using the MCMC method)
-sample_size <- 10000
-samples_theta_bias <- sample(prior_theta_bias, size = sample_size, prob = posterior, replace = TRUE)
-samples_theta_2 <- sample(prior_theta_2, size = sample_size, prob = posterior, replace = TRUE)
-
-# Now, 'samples_theta_bias' and 'samples_theta_2' contain samples from the posterior distribution of theta_bias and theta_2.
-posterior_distribution <- data.frame(
-  samples_theta_bias = samples_theta_bias,
-  samples_theta_2 = samples_theta_2
+# Create a data frame for plotting
+posterior_df <- data.frame(
+  theta_bias = theta_bias_samples,
+  theta_2 = theta_2_samples
 )
 
-plot(posterior_distribution)
+# Create a density plot
+ggplot(posterior_df, aes(x = theta_bias)) +
+  geom_density(fill = "blue", alpha = 0.6) +
+  geom_vline(xintercept = theta_current$theta_bias, color = "red", linetype = "dashed") +
+  labs(title = "Posterior Distribution of theta_bias") +
+  theme_minimal()
 
-print(posterior_distribution);
-
-# best modal
-best_model <- lm(y ~ poly(x4, 1, raw = TRUE) + poly(x1, 2, raw = TRUE) + poly(x1, 3, raw = TRUE) +
-                   poly(x2, 4, raw = TRUE) + poly(x1, 4, raw = TRUE), data = df)
-
-
-
-
-# Create a new data frame with fixed parameter values
-df_fixed <- data.frame(
-  x1 = rep(theta_1_fixed, nrow(df)),  # Fix theta_1
-  x2 = rep(theta_2_fixed, nrow(df)),  # Fix theta_2
-  x4 = df$x4,  # Keep the original x4 values
-  y = df$y  # Keep the original y values
-)
-
-# Fit a new linear regression model with fixed parameters
-fixed_model <- lm(y ~ poly(x4, 1, raw = TRUE) + poly(x1, 2, raw = TRUE) + poly(x1, 3, raw = TRUE) +
-                    poly(x2, 4, raw = TRUE) + poly(x1, 4, raw = TRUE), data = df_fixed)
-
-# Print the summary of the fixed model
-summary(fixed_model)
-
-# Sorting theta_hat values to find two largest absolute values
-theta_hat <- coef(best_model)
-sorted_theta_hat <- sort(abs(theta_hat), decreasing = TRUE)
-two_largest_values <- sorted_theta_hat[1:2]
-
-print(two_largest_values)
-
-#largest values
-
-# Assigning parameters
-first_largest <- two_largest_values[1]
-second_largest <- two_largest_values[2]
-
-sorted_theta_hat
-
-# Initializing variables
-arr_1 <- 0
-arr_2 <- 0
-f_value <- 0
-s_value <- 0
-
-# Calculating epsilon as twice the RSS of the model
-epsilon <- sum(residuals(best_model)^2) * 2
-
-print(epsilon)
+# Create a density plot for theta_2
+ggplot(posterior_df, aes(x = theta_2)) +
+  geom_density(fill = "blue", alpha = 0.6) +
+  geom_vline(xintercept = theta_current$theta_2, color = "red", linetype = "dashed") +
+  labs(title = "Posterior Distribution of theta_2") +
+  theme_minimal()
 
 
-### Task 3.2 ####
 
-# Number of iterations
-num <- 100
 
-# Initialize arrays to store accepted parameter values
-accepted_range1 <- numeric(0)
-accepted_range2 <- numeric(0)
 
-# Define the range for uniform distributions
-range_min <- c(-0.483065688, -0.1435789)
-range_max <- c(0.483065688, 0.1435789)
 
-# Iterate through the specified number of iterations
-for (i in 1:num) {
-  # Generate random parameter values from uniform distributions
-  range1 <- runif(1, range_min[1], range_max[1])
-  range2 <- runif(1, range_min[2], range_max[2])
-  
-  # Create a new parameter vector with the correct variable names
-  New_thetahat <- c(x4 = range1, x1 = range2, x2 = theta_one, x3 = theta_three)
-  
-  # Calculate predicted response values using the best_model
-  New_Y_Hat <- predict(best_model, newdata = as.data.frame(t(New_thetahat)))
-  
-  # Calculate the new RSS
-  new_RSS <- sum((y - New_Y_Hat)^2)
-  
-  # Check if new_RSS is less than epsilon (acceptance criterion)
-  if (new_RSS < epsilon) {
-    # Store accepted parameter values
-    accepted_range1 <- c(accepted_range1, range1)
-    accepted_range2 <- c(accepted_range2, range2)
-  }
-}
-
-# Combine the accepted parameter values into a matrix
-accepted_parameters <- cbind(accepted_range1, accepted_range2)
-
-# Result: accepted_parameters contains the accepted parameter values
 
