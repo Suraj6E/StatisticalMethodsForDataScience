@@ -666,6 +666,36 @@ ggplot(posterior_df, aes(x = theta_2)) +
   theme_minimal()
 
 
+prior_range_theta_bias <- c(20000, 50000)  # Adjust as needed
+prior_range_theta_2 <- c(2000, 5000)  # Adjust as needed
+
+# Create a data frame for plotting
+posterior_df <- data.frame(
+  theta_bias = theta_bias_samples,
+  theta_2 = theta_2_samples
+)
+
+# Create a density plot for theta_bias with the uniform prior
+plot_theta_bias <- ggplot(posterior_df, aes(x = theta_bias, fill = "Posterior")) +
+  geom_density(alpha = 0.6) +
+  geom_vline(xintercept = theta_current$theta_bias, color = "red", linetype = "dashed") +
+  geom_vline(xintercept = mean(prior_range_theta_bias), color = "green", linetype = "dashed") +
+  labs(title = "Posterior Distribution of theta_bias with Uniform Prior") +
+  theme_minimal() +
+  scale_fill_manual(values = c("Posterior" = "blue"), guide = guide_legend(title = "Legend"))
+
+# Create a density plot for theta_2 with the uniform prior
+plot_theta_2 <- ggplot(posterior_df, aes(x = theta_2, fill = "Posterior")) +
+  geom_density(alpha = 0.6) +
+  geom_vline(xintercept = theta_current$theta_2, color = "red", linetype = "dashed") +
+  geom_vline(xintercept = mean(prior_range_theta_2), color = "blue", linetype = "dashed") +
+  labs(title = "Posterior Distribution of theta_2 with Uniform Prior") +
+  theme_minimal() +
+  scale_fill_manual(values = c("Posterior" = "green"), guide = guide_legend(title = "Legend"))
+
+# Print the two density plots side by side (you can adjust the layout as needed)
+library(gridExtra)
+grid.arrange(plot_theta_bias, plot_theta_2, ncol = 2)
 
 
 
