@@ -666,14 +666,18 @@ ggplot(posterior_df, aes(x = theta_2)) +
   theme_minimal()
 
 
+### task 3.2 ###
+
 prior_range_theta_bias <- c(20000, 50000)  # Adjust as needed
-prior_range_theta_2 <- c(2000, 5000)  # Adjust as needed
+prior_range_theta_2 <- c(-5000, -2000)  # Adjust as needed
 
 # Create a data frame for plotting
 posterior_df <- data.frame(
   theta_bias = theta_bias_samples,
   theta_2 = theta_2_samples
 )
+
+### task 3.3 ###
 
 # Create a density plot for theta_bias with the uniform prior
 plot_theta_bias <- ggplot(posterior_df, aes(x = theta_bias, fill = "Posterior")) +
@@ -694,9 +698,36 @@ plot_theta_2 <- ggplot(posterior_df, aes(x = theta_2, fill = "Posterior")) +
   scale_fill_manual(values = c("Posterior" = "green"), guide = guide_legend(title = "Legend"))
 
 # Print the two density plots side by side (you can adjust the layout as needed)
-library(gridExtra)
 grid.arrange(plot_theta_bias, plot_theta_2, ncol = 2)
 
+
+### task 3.4 ###
+
+# Create a joint scatterplot matrix for theta_bias and theta_2
+joint_plot <- ggplot(posterior_df, aes(x = theta_bias, y = theta_2, color = "Data Points")) +
+  geom_point(alpha = 0.4) +
+  labs(title = "Joint Posterior Distribution of theta_bias and theta_2") +
+  theme_minimal() +
+  scale_color_manual(values = "chocolate3")
+
+joint_plot
+
+# Create a marginal histogram for theta_bias with color
+marginal_theta_bias <- ggplot(posterior_df, aes(x = theta_bias, fill = "theta_bias")) +
+  geom_histogram(binwidth = 500, alpha = 0.6) +
+  labs(title = "Marginal Posterior Distribution of theta_bias") +
+  theme_minimal() +
+  scale_fill_manual(values = c("theta_bias" = "blue"), guide = guide_legend(title = "Parameter"))
+
+# Create a marginal histogram for theta_2 with color
+marginal_theta_2 <- ggplot(posterior_df, aes(x = theta_2, fill = "theta_2")) +
+  geom_histogram(binwidth = 100, alpha = 0.6) +
+  labs(title = "Marginal Posterior Distribution of theta_2") +
+  theme_minimal() +
+  scale_fill_manual(values = c("theta_2" = "green"), guide = guide_legend(title = "Parameter"))
+
+# Arrange and print the plots using grid.arrange
+grid.arrange(marginal_theta_bias, marginal_theta_2, ncol = 2, widths = c(2, 1))
 
 
 
