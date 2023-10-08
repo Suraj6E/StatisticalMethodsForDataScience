@@ -727,7 +727,7 @@ marginal_theta_2 <- ggplot(posterior_df, aes(x = theta_2, fill = "theta_2")) +
   scale_fill_manual(values = c("theta_2" = "green"), guide = guide_legend(title = "Parameter"))
 
 # Arrange and print the plots using grid.arrange
-grid.arrange(marginal_theta_bias, marginal_theta_2, ncol = 2, widths = c(2, 1))
+grid.arrange(marginal_theta_bias, marginal_theta_2, ncol = 2)
 
 
 
