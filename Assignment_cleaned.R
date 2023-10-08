@@ -587,18 +587,19 @@ cat("Success Rate on Predictions:", success_rate, "%\n")
 # Task 3.1: Compute 2 parameter posterior distributions
 # Define the likelihood function for a normal distribution
 
-# Initialize MCMC settings
-n_iterations <- 10000
-burn_in <- 1000
-n_parameters <- 2  # Number of parameters to estimate (theta_bias and theta_2)
+best_model <- lm(y ~ poly(x2, 1, raw = TRUE) + poly(x1, 3, raw = TRUE) + poly(x3, 4, raw = TRUE), data = df)
+
+epsilon <- rss_df$RSS[4] * 2 ## fixing value of eplision
+print(epsilon)
+
+
+### calculation ###
 
 # Initialize parameter values for the two parameters of interest and fix others
-theta_current <- list(theta_bias = 34100.456, theta_2 = 3342.672)
+theta_current <- list(theta_bias = -1866.95, theta_2 = 165.645)
 # Fix other parameters based on estimated values
 theta_1_fixed <- 29.39313
-theta_3_fixed <- -1.949769
 theta_4_fixed <- 36.0437
-theta_5_fixed <- 0.01168091
 
 # Create empty lists to store samples
 theta_samples <- vector("list", length = n_iterations)
@@ -611,8 +612,8 @@ for (iteration in 1:n_iterations) {
   theta_2_proposed <- theta_current$theta_2 + rnorm(1, mean = 0, sd = 100)  # Adjust step size as needed
   
   # Calculate likelihood and prior for current and proposed parameters
-  likelihood_current <- likelihood(df$y, theta_current$theta_bias + theta_current$theta_2 * df$x4, 5)
-  likelihood_proposed <- likelihood(df$y, theta_bias_proposed + theta_2_proposed * df$x4, 5)
+  likelihood_current <- likelihood(df$y, theta_current$theta_bias + theta_current$theta_2 * df$x1, 5)
+  likelihood_proposed <- likelihood(df$y, theta_bias_proposed + theta_2_proposed * df$x1, 5)
   prior_current <- prior(theta_current$theta_bias, theta_1_fixed, 10000) + prior(theta_current$theta_2, theta_2_fixed, 10000)
   prior_proposed <- prior(theta_bias_proposed, theta_1_fixed, 10000) + prior(theta_2_proposed, theta_2_fixed, 10000)
   
@@ -659,7 +660,7 @@ ggplot(posterior_df, aes(x = theta_bias)) +
 
 # Create a density plot for theta_2
 ggplot(posterior_df, aes(x = theta_2)) +
-  geom_density(fill = "blue", alpha = 0.6) +
+  geom_density(fill = "green", alpha = 0.6) +
   geom_vline(xintercept = theta_current$theta_2, color = "red", linetype = "dashed") +
   labs(title = "Posterior Distribution of theta_2") +
   theme_minimal()
@@ -667,8 +668,8 @@ ggplot(posterior_df, aes(x = theta_2)) +
 
 ### task 3.2 ###
 
-prior_range_theta_bias <- c(20000, 50000)  # Adjust as needed
-prior_range_theta_2 <- c(-5000, -2000)  # Adjust as needed
+prior_range_theta_bias <- c(-5000, 1000)
+prior_range_theta_2 <- c(0, 100)
 
 # Create a data frame for plotting
 posterior_df <- data.frame(
@@ -720,14 +721,13 @@ marginal_theta_bias <- ggplot(posterior_df, aes(x = theta_bias, fill = "theta_bi
 
 # Create a marginal histogram for theta_2 with color
 marginal_theta_2 <- ggplot(posterior_df, aes(x = theta_2, fill = "theta_2")) +
-  geom_histogram(binwidth = 100, alpha = 0.6) +
+  geom_histogram(binwidth = 10, alpha = 0.6) +
   labs(title = "Marginal Posterior Distribution of theta_2") +
   theme_minimal() +
   scale_fill_manual(values = c("theta_2" = "green"), guide = guide_legend(title = "Parameter"))
 
 # Arrange and print the plots using grid.arrange
 grid.arrange(marginal_theta_bias, marginal_theta_2, ncol = 2)
-
 
 
 
