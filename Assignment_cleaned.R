@@ -22,7 +22,6 @@ data$invoice_date <- as.Date(data$invoice_date, format = "%d/%m/%Y")
 data <- data[order(data$invoice_date), ]
 
 
-
 #remove unique values
 data$invoice_no <- NULL
 data$customer_id <- NULL
@@ -506,8 +505,7 @@ train_data <- df[train_index, ]
 test_data <- df[-train_index, ]
 
 # Fit the "best" model (Model 4) using the training data
-best_model <- lm(y ~ poly(x4, 1, raw = TRUE) + poly(x1, 2, raw = TRUE) + poly(x1, 3, raw = TRUE) +
-                      poly(x2, 4, raw = TRUE) + poly(x1, 4, raw = TRUE), data = df)
+best_model <- lm(y ~ poly(x2, 1, raw = TRUE) + poly(x1, 3, raw = TRUE) + poly(x3, 4, raw = TRUE), data = df)
 
 # Predictions on the testing data
 predictions <- predict(best_model, newdata = test_data, interval = "prediction", level = 0.95)
@@ -542,6 +540,7 @@ results_plot <- ggplot(results, aes(x = x1, y = y_pred)) +
   geom_point(data = results, aes(x = x1, y = y_true), color = "red", size = 3) +
   labs(title = "Predicted vs. True Data with Prediction Intervals", x = "x1", y = "y")
 
+results_plot
 grid.arrange(train_plot, test_plot, results_plot, ncol = 2)
 
 
@@ -554,7 +553,7 @@ ggplot(results, aes(x = x1)) +
                 width = 0.1, size = 1) +
   scale_color_manual(values = c("True Data" = "black", "Predicted Data" = "blue", "Prediction Intervals" = "red"),
                      labels = c("True Data", "Predicted Data", "Prediction Intervals")) +
-  ggtitle("Testing Data vs. Predictions of Modal 1") +
+  ggtitle("Testing Data vs. Predictions of Modal 4") +
   xlab("Test Data") +
   ylab("Values") +
   theme(legend.title = element_blank())
